@@ -1,0 +1,119 @@
+/* Bible Explained — global styles.
+   The design medium was inline HTML/CSS; most styling lives inline in the
+   components (see src/theme.ts). This file holds the reset, keyframes, and the
+   hover/focus states the prototype expressed through style-hover / style-focus. */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #f6f4ef;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: #16222e;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #16324f;
+}
+a:hover {
+  color: #8a6d2f;
+}
+
+button {
+  font-family: inherit;
+}
+
+@keyframes bePulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- Hover / focus states (ported from style-hover / style-focus) ----
+   Each hook class corresponds to a specific interactive element in the design.
+   Inline styles set the resting appearance; these rules add the hover/focus. */
+
+.be-navtab:hover {
+  background: rgba(22, 34, 46, 0.05);
+}
+
+/* Primary navy pill buttons (Continue, Start reading, Resume, Ask, etc.) */
+.be-primary:hover {
+  background: #1d3f63 !important;
+}
+
+/* Outline / white pill buttons */
+.be-outline:hover {
+  border-color: #16324f !important;
+}
+.be-outline-gold:hover {
+  border-color: #b08c46 !important;
+}
+
+/* Ghost text links */
+.be-link:hover {
+  color: #8a6d2f !important;
+}
+.be-link-navy:hover {
+  color: #16324f !important;
+}
+
+/* Book pills on the home screen */
+.be-bookpill:hover {
+  border-color: #b08c46 !important;
+}
+
+/* Topic chips */
+.be-topic:hover {
+  background: #e7ddc5 !important;
+}
+
+/* Book list rows */
+.be-bookrow:hover {
+  background: #fff !important;
+}
+
+/* Chapter grid squares & quiz options */
+.be-chapbtn:hover {
+  border-color: #16324f !important;
+}
+
+/* Library remove buttons */
+.be-remove:hover {
+  color: #a33 !important;
+}
+
+/* Overlay close / listen controls */
+.be-listen-ctl:hover {
+  border-color: #f2ede1 !important;
+}
+
+/* Inputs & textareas */
+.be-input:focus {
+  border-color: #16324f !important;
+  background: #fff !important;
+}
+.be-input-plain:focus {
+  border-color: #16324f !important;
+}
+
+/* Respect reduced-motion preferences for the skeleton pulse. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
