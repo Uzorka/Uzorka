@@ -48,55 +48,65 @@ npm run preview   # preview the production build
 
 ## AI configuration (optional)
 
-The **reading-level explanations** and **Ask about this verse** features call an
-AI model. Everything else works without any configuration — the built-in
-Standard explanations and all study content are always available. When no
-backend is configured, those two features show a friendly "connect an API key"
-message instead of an answer.
+The **reading-level explanations** (Child / Beginner / Deep) and **Ask about
+this verse** features call an AI model. Everything else works without any
+configuration — the Gospel of John 1 study and all Bible text are always
+available. When no backend is reachable, those features show a friendly
+"connect an API key" message instead of an answer.
 
-Configuration is resolved in this order (first match wins):
+### Recommended: the bundled serverless proxy
 
-1. **Runtime override** — a JSON object in `localStorage` under `be_ai_config`:
+The repo ships a Vercel serverless function at `api/complete.js` that proxies
+Anthropic so your API key stays server-side (never in the browser). The client
+calls `/api/complete` by default — you just add a key:
+
+1. Get an API key at [console.anthropic.com](https://console.anthropic.com/).
+2. In your Vercel project → **Settings → Environment Variables**, add
+   `ANTHROPIC_API_KEY`. Optionally add `ANTHROPIC_MODEL` (defaults to
+   `claude-opus-4-8`; set `claude-haiku-4-5` for a cheaper, faster option).
+3. Redeploy. The level tabs and Ask box now work.
+
+To run the proxy locally, use the Vercel CLI (`vercel dev`) with
+`ANTHROPIC_API_KEY` in your environment — plain `vite dev` serves the static app
+but not the `/api` function, so AI shows the "not configured" message.
+
+### Advanced: custom endpoint (no bundled proxy)
+
+You can instead point the client at your own endpoint, resolved in this order:
+
+1. **Runtime override** — a JSON object in `localStorage` under `be_ai_config`
+   (`setAIConfig()` in `src/ai.ts` writes it):
    ```js
-   localStorage.setItem(
-     "be_ai_config",
-     JSON.stringify({ endpoint: "https://your-proxy.example/complete", apiKey: "…", model: "…" }),
-   );
+   localStorage.setItem("be_ai_config",
+     JSON.stringify({ endpoint: "https://your-proxy.example/complete", apiKey: "…", model: "…" }));
    ```
-   Lets you enable AI without rebuilding. `setAIConfig()` in `src/ai.ts` does the
-   same thing.
-2. **Build-time environment variables** (copy `.env.example` to `.env`):
-   - `VITE_AI_ENDPOINT` — the URL to POST completions to.
-   - `VITE_AI_API_KEY` — optional bearer token / API key.
-   - `VITE_AI_MODEL` — optional model id.
-3. If an **API key but no endpoint** is set, Anthropic's Messages API is assumed
-   (`https://api.anthropic.com/v1/messages`).
+2. **Build-time env** (`.env`): `VITE_AI_ENDPOINT`, `VITE_AI_API_KEY`, `VITE_AI_MODEL`.
+3. An **API key with no endpoint** → Anthropic's Messages API directly
+   (browser-direct, for local testing only).
 
-### Backend shapes
+A custom endpoint receives `{ system, max_tokens, messages, model }` (plus an
+optional `Authorization: Bearer <apiKey>`) and may reply with a plain string or
+any of `{ text }`, `{ completion }`, `{ output }`, an Anthropic
+`{ content: [{ text }] }`, or an OpenAI-style `{ choices: [{ message: { content } }] }`.
 
-- **Anthropic-direct** (endpoint on `api.anthropic.com`): the request is sent as
-  an Anthropic Messages call, including the
-  `anthropic-dangerous-direct-browser-access` header required for browser
-  origins. Convenient for local testing; for production prefer a proxy so your
-  key is never shipped to the client.
-- **Custom proxy** (any other endpoint): the payload
-  `{ system, max_tokens, messages, model }` is POSTed with an optional
-  `Authorization: Bearer <apiKey>` header. The response may be a plain string or
-  any of these shapes: `{ completion }`, `{ text }`, `{ output }`, an Anthropic
-  `{ content: [{ text }] }`, or an OpenAI-style `{ choices: [{ message: { content } }] }`.
-
-> ⚠️ Shipping an API key in a client bundle (`VITE_AI_API_KEY`) exposes it to
-> anyone who loads the page. Use a server-side proxy for anything public.
+> ⚠️ `VITE_*` values are bundled into the client and visible to anyone. Prefer
+> the server-side `/api/complete` proxy for anything public.
 
 ## Project structure
 
 ```
+api/
+  complete.js       Vercel serverless proxy to Anthropic (keeps the key server-side)
+public/bible/       full KJV corpus, one JSON per book + index.json (lazy-loaded)
+scripts/
+  fetch-bible.mjs   regenerates public/bible/
 src/
-  data.ts           KJV text + study/quiz/summary seed data (typed)
+  data.ts           John 1 study/quiz/summary seed + verse-of-the-day (typed)
+  bible.ts          book manifest, lazy book loader, reference keys
   theme.ts          design tokens (colors, fonts, shadows)
-  ai.ts             configurable AI completion client
+  ai.ts             AI client (defaults to /api/complete; configurable)
   useBibleApp.ts    all app state, navigation, audio, persistence
-  App.tsx           screen router + chrome (header, tabs, toast)
+  App.tsx           hash router + chrome (header, tabs, toast)
   components/       Header, MobileTabs, Toast, Segmented, Modes, Skeleton
   screens/          Home, Books, Chapters, Reader, Chapter, Done, Library, Listen
 ```

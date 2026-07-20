@@ -29,7 +29,9 @@ export type AIConfig = {
 };
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
-const DEFAULT_MODEL = "claude-3-5-haiku-latest";
+/** The bundled serverless proxy (api/complete.js) — used when nothing else is configured. */
+const DEFAULT_PROXY = "/api/complete";
+const DEFAULT_MODEL = "claude-opus-4-8";
 const STORAGE_KEY = "be_ai_config";
 
 /** A host that injects `window.claude` (e.g. the original design tool). */
@@ -116,11 +118,11 @@ export async function complete(params: CompleteParams): Promise<string> {
   }
 
   const { apiKey, model } = getAIConfig();
-  let { endpoint } = getAIConfig();
-  if (!endpoint) {
-    if (!apiKey) throw new AINotConfiguredError();
-    endpoint = ANTHROPIC_ENDPOINT;
-  }
+  const configured = getAIConfig().endpoint;
+  // Resolve the endpoint: an explicit endpoint wins; else Anthropic-direct when
+  // a client key is set; else the bundled serverless proxy at /api/complete.
+  const endpoint = configured || (apiKey ? ANTHROPIC_ENDPOINT : DEFAULT_PROXY);
+  const usingDefaultProxy = endpoint === DEFAULT_PROXY;
 
   const isAnthropic = /api\.anthropic\.com/.test(endpoint);
   const headers: Record<string, string> = { "content-type": "application/json" };
@@ -138,13 +140,27 @@ export async function complete(params: CompleteParams): Promise<string> {
       messages: params.messages,
     });
   } else {
-    // Generic proxy: pass the whole payload through and let the server decide.
+    // Proxy (bundled or custom): pass the whole payload through.
     if (apiKey) headers["authorization"] = `Bearer ${apiKey}`;
     body = JSON.stringify({ ...params, model: model || undefined });
   }
 
-  const res = await fetch(endpoint, { method: "POST", headers, body });
+  let res: Response;
+  try {
+    res = await fetch(endpoint, { method: "POST", headers, body });
+  } catch (e) {
+    // No backend reachable (e.g. running the built app with no proxy) — treat
+    // the default-proxy case as "not configured" so the UI shows guidance.
+    if (usingDefaultProxy) throw new AINotConfiguredError();
+    throw e;
+  }
+
   if (!res.ok) {
+    // The proxy signals a missing key with 503; a 404 means no proxy is
+    // deployed. Both mean "not configured yet".
+    if (res.status === 404 || res.status === 501 || res.status === 503) {
+      throw new AINotConfiguredError();
+    }
     throw new Error(`AI request failed (${res.status})`);
   }
   const data: unknown = await res.json().catch(() => null);
