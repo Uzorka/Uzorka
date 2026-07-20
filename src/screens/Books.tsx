@@ -1,5 +1,5 @@
 import type { BibleApp } from "../useBibleApp";
-import { BOOKS, OT_COUNT, type Book } from "../data";
+import type { BookMeta } from "../bible";
 import { C, SERIF } from "../theme";
 
 const colKicker: React.CSSProperties = {
@@ -10,16 +10,7 @@ const colKicker: React.CSSProperties = {
   marginBottom: 10,
 };
 
-function BookRow({
-  book,
-  showBadge,
-  onOpen,
-}: {
-  book: Book;
-  showBadge: boolean;
-  onOpen: () => void;
-}) {
-  const isJohn = book.name === "John";
+function BookRow({ book, onOpen }: { book: BookMeta; onOpen: () => void }) {
   return (
     <button
       className="be-bookrow"
@@ -29,7 +20,7 @@ function BookRow({
         justifyContent: "space-between",
         alignItems: "center",
         border: "none",
-        background: showBadge && isJohn ? C.johnBadgeBg : "none",
+        background: "none",
         cursor: "pointer",
         fontSize: 15,
         padding: "9px 12px",
@@ -38,22 +29,19 @@ function BookRow({
         textAlign: "left",
       }}
     >
-      <span>
-        {book.name}
-        {showBadge && isJohn ? "  ✦" : ""}
-      </span>
+      <span>{book.name}</span>
       <span style={{ fontSize: 12, color: C.faint }}>{book.chapters} ch</span>
     </button>
   );
 }
 
 export function Books({ app }: { app: BibleApp }) {
-  const { s, actions } = app;
+  const { s, actions, books } = app;
   const grid2 = s.isMobile ? "1fr" : "1fr 1fr";
   const search = s.bookSearch.trim().toLowerCase();
-  const match = (b: Book) => !search || b.name.toLowerCase().includes(search);
-  const ot = BOOKS.slice(0, OT_COUNT).filter(match);
-  const nt = BOOKS.slice(OT_COUNT).filter(match);
+  const match = (b: BookMeta) => !search || b.name.toLowerCase().includes(search);
+  const ot = books.filter((b) => b.testament === "OT" && match(b));
+  const nt = books.filter((b) => b.testament === "NT" && match(b));
 
   return (
     <div style={{ maxWidth: 880, margin: "0 auto", padding: "36px 20px 0" }}>
@@ -81,19 +69,25 @@ export function Books({ app }: { app: BibleApp }) {
           <div style={colKicker}>OLD TESTAMENT</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {ot.map((b) => (
-              <BookRow key={b.name} book={b} showBadge={false} onOpen={() => actions.openBookNamed(b.name)} />
+              <BookRow key={b.id} book={b} onOpen={() => actions.openBook(b.id)} />
             ))}
+            {ot.length === 0 && <Empty />}
           </div>
         </div>
         <div>
           <div style={colKicker}>NEW TESTAMENT</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {nt.map((b) => (
-              <BookRow key={b.name} book={b} showBadge onOpen={() => actions.openBookNamed(b.name)} />
+              <BookRow key={b.id} book={b} onOpen={() => actions.openBook(b.id)} />
             ))}
+            {nt.length === 0 && <Empty />}
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function Empty() {
+  return <div style={{ fontSize: 14, color: C.faint, padding: "6px 12px" }}>No matches.</div>;
 }

@@ -1,8 +1,10 @@
 import type { BibleApp } from "../useBibleApp";
-import { EX, JOHN1, VERSE_COUNT } from "../data";
-import { audioViOf } from "../useBibleApp";
+import { audioViOf, chapterVersesOf, isSeed } from "../useBibleApp";
+import { EX } from "../data";
+import { bookMeta, refKey } from "../bible";
 import { C, SERIF, SANS, CARD_SHADOW_LG } from "../theme";
 import { Modes } from "../components/Modes";
+import { SkeletonLines } from "../components/Skeleton";
 
 const kicker: React.CSSProperties = {
   fontSize: 11,
@@ -13,6 +15,10 @@ const kicker: React.CSSProperties = {
 
 export function Chapter({ app }: { app: BibleApp }) {
   const { s, actions, settings } = app;
+  const verses = chapterVersesOf(s);
+  const chapterLen = verses.length;
+  const bookName = bookMeta(s.bookId)?.name ?? "";
+  const seed = isSeed(s.bookId, s.chapter);
   const chapterFont = Math.round(18 * settings.verseTextScale);
   const audioVi = audioViOf(s);
   const playerBottom = s.isMobile ? 78 : 20;
@@ -32,11 +38,11 @@ export function Chapter({ app }: { app: BibleApp }) {
         >
           <div style={{ fontSize: 13, color: C.muted }}>
             <span onClick={() => actions.go("books")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
-              John
+              {bookName}
             </span>{" "}
             &rsaquo;{" "}
-            <span onClick={() => actions.go("chapters")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
-              Chapter 1
+            <span onClick={() => actions.openBook(s.bookId)} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+              Chapter {s.chapter}
             </span>{" "}
             &rsaquo; Full chapter
           </div>
@@ -54,15 +60,17 @@ export function Chapter({ app }: { app: BibleApp }) {
           }}
         >
           <div style={{ fontFamily: SERIF, fontSize: 26, padding: "16px 8px 6px" }}>
-            John 1{" "}
+            {bookName} {s.chapter}{" "}
             <span style={{ fontSize: 14, color: C.faint, fontFamily: SANS }}>KJV</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {JOHN1.map((text, i) => {
-              const e = EX[i + 1] || {};
+            {verses.map((text, i) => {
+              const ex = seed ? EX[i + 1] : undefined;
               const open = !!s.expanded[i];
-              const bg =
-                s.playingVi === i ? C.johnBadgeBg : open ? C.panelBg : "transparent";
+              const bg = s.playingVi === i ? C.johnBadgeBg : open ? C.panelBg : "transparent";
+              const aiKey = refKey({ bookId: s.bookId, chapter: s.chapter, verse: i + 1 }) + "|Standard";
+              const aiText = s.aiCache[aiKey];
+              const aiBusy = !!s.aiBusy[aiKey] && !aiText;
               return (
                 <div key={i} style={{ borderRadius: 14, background: bg, transition: "background .25s" }}>
                   <div
@@ -104,13 +112,23 @@ export function Chapter({ app }: { app: BibleApp }) {
                       }}
                     >
                       <div style={kicker}>SIMPLE MEANING</div>
-                      <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 6, color: C.bodyInk, textWrap: "pretty" }}>
-                        {e.s || ""}
-                      </div>
-                      <div style={{ ...kicker, marginTop: 12 }}>MAIN LESSON</div>
-                      <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 6, color: C.bodyInk, textWrap: "pretty" }}>
-                        {e.lesson || ""}
-                      </div>
+                      {seed ? (
+                        <>
+                          <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 6, color: C.bodyInk, textWrap: "pretty" }}>
+                            {ex?.s ?? ""}
+                          </div>
+                          <div style={{ ...kicker, marginTop: 12 }}>MAIN LESSON</div>
+                          <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 6, color: C.bodyInk, textWrap: "pretty" }}>
+                            {ex?.lesson ?? ""}
+                          </div>
+                        </>
+                      ) : aiBusy ? (
+                        <SkeletonLines widths={[undefined, "72%"]} height={13} />
+                      ) : (
+                        <div style={{ fontSize: 14, lineHeight: 1.6, marginTop: 6, color: C.bodyInk, textWrap: "pretty" }}>
+                          {aiText ?? ""}
+                        </div>
+                      )}
                       <button
                         onClick={() => actions.studyVerse(i)}
                         style={{
@@ -188,7 +206,7 @@ export function Chapter({ app }: { app: BibleApp }) {
             &#9197;
           </button>
           <div style={{ fontSize: 12, fontWeight: 600, padding: "0 6px", whiteSpace: "nowrap" }}>
-            Verse {audioVi + 1} of {VERSE_COUNT}
+            Verse {audioVi + 1} of {chapterLen}
           </div>
           <button onClick={actions.cycleRate} style={outlineCtl}>
             {s.rate}×

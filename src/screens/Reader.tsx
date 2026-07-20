@@ -1,6 +1,7 @@
 import type { BibleApp } from "../useBibleApp";
-import { EX, JOHN1, VERSE_COUNT } from "../data";
-import { refFor } from "../useBibleApp";
+import { chapterVersesOf, curRef, isSeed } from "../useBibleApp";
+import { EX } from "../data";
+import { bookMeta, refKey } from "../bible";
 import { C, SERIF, WHITE_CARD } from "../theme";
 import { Modes } from "../components/Modes";
 import { Segmented } from "../components/Segmented";
@@ -39,21 +40,39 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 
 export function Reader({ app }: { app: BibleApp }) {
   const { s, actions, settings } = app;
+  const verses = chapterVersesOf(s);
   const vi = s.vi;
   const verseNum = vi + 1;
+  const chapterLen = verses.length;
+  const text = verses[vi] ?? "";
+  const bookName = bookMeta(s.bookId)?.name ?? "";
+  const ref = curRef(s);
+  const rk = refKey(ref);
+  const seed = isSeed(s.bookId, s.chapter);
+  const ex = seed ? EX[verseNum] : undefined;
+
   const scale = settings.verseTextScale;
   const verseFont = Math.round(29 * scale);
-  const progressPct = Math.round((verseNum / VERSE_COUNT) * 100) + "%";
-  const ref = refFor(vi);
-  const ex = EX[verseNum] || { s: "" };
-  const key = vi + "|" + s.level;
-  const aiText = s.lvlCache[key];
-  const simpleText = s.level === "Standard" ? ex.s || "" : aiText || "";
-  const lvlBusy = s.lvlBusy && !simpleText;
+  const progressPct = chapterLen ? Math.round((verseNum / chapterLen) * 100) + "%" : "0%";
 
-  const bmSaved = !!s.bookmarks[ref];
-  const people = [...(ex.people || []), ...(ex.places || [])];
+  const key = rk + "|" + s.level;
+  const aiText = s.aiCache[key];
+  const simpleText = seed ? (s.level === "Standard" ? ex?.s ?? "" : aiText ?? "") : aiText ?? "";
+  const aiBusy = !!s.aiBusy[key] && !simpleText;
+
+  const bmSaved = !!s.bookmarks[rk];
+  const people = ex ? [...(ex.people || []), ...(ex.places || [])] : [];
   const hasAskAnswer = !!s.askAnswer && !s.askBusy;
+
+  if (s.bookLoading && chapterLen === 0) {
+    return (
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 20px 0" }}>
+        <div style={{ ...WHITE_CARD, padding: "34px 34px" }}>
+          <SkeletonLines widths={["40%", undefined, "80%"]} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 20px 0" }}>
@@ -69,11 +88,11 @@ export function Reader({ app }: { app: BibleApp }) {
       >
         <div style={{ fontSize: 13, color: C.muted }}>
           <span onClick={() => actions.go("books")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
-            John
+            {bookName}
           </span>{" "}
           &rsaquo;{" "}
-          <span onClick={() => actions.go("chapters")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
-            Chapter 1
+          <span onClick={() => actions.openBook(s.bookId)} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+            Chapter {s.chapter}
           </span>{" "}
           &rsaquo; Verse {verseNum}
         </div>
@@ -86,14 +105,14 @@ export function Reader({ app }: { app: BibleApp }) {
           <div style={{ height: 4, borderRadius: 2, background: C.goldBar, width: progressPct }} />
         </div>
         <div style={{ fontSize: 12, fontWeight: 600, color: C.muted, whiteSpace: "nowrap" }}>
-          Verse {verseNum} of {VERSE_COUNT}
+          Verse {verseNum} of {chapterLen}
         </div>
       </div>
 
       {/* verse card */}
       <div style={{ ...WHITE_CARD, padding: "34px 34px 26px", marginTop: 16 }}>
         <div style={{ fontFamily: SERIF, fontSize: 15, color: C.goldBar }}>
-          John 1 : {verseNum} · KJV
+          {bookName} {s.chapter} : {verseNum} · KJV
         </div>
         <div
           style={{
@@ -104,7 +123,7 @@ export function Reader({ app }: { app: BibleApp }) {
             textWrap: "pretty",
           }}
         >
-          &ldquo;{JOHN1[vi]}&rdquo;
+          &ldquo;{text}&rdquo;
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 22 }}>
           <button className="be-primary" onClick={actions.togglePlay} style={navyPill}>
@@ -121,18 +140,10 @@ export function Reader({ app }: { app: BibleApp }) {
           >
             {bmSaved ? "✓ Saved" : "Save"}
           </button>
-          <button
-            className="be-outline"
-            onClick={actions.openNote}
-            style={{ ...outlinePill, color: C.navy }}
-          >
-            {s.notes[ref] ? "Edit note" : "Add note"}
+          <button className="be-outline" onClick={actions.openNote} style={{ ...outlinePill, color: C.navy }}>
+            {s.notes[rk] ? "Edit note" : "Add note"}
           </button>
-          <button
-            className="be-outline"
-            onClick={actions.shareVerse}
-            style={{ ...outlinePill, color: C.navy }}
-          >
+          <button className="be-outline" onClick={actions.shareVerse} style={{ ...outlinePill, color: C.navy }}>
             Share
           </button>
         </div>
@@ -211,26 +222,22 @@ export function Reader({ app }: { app: BibleApp }) {
         </div>
 
         <Section label="SIMPLE MEANING">
-          {lvlBusy ? (
-            <SkeletonLines widths={[undefined, "70%"]} />
-          ) : (
-            <div style={body}>{simpleText}</div>
-          )}
+          {aiBusy ? <SkeletonLines widths={[undefined, "70%"]} /> : <div style={body}>{simpleText}</div>}
         </Section>
 
-        {ex.ctx && (
+        {ex?.ctx && (
           <Section label="CONTEXT">
             <div style={body}>{ex.ctx}</div>
           </Section>
         )}
 
-        {ex.words && ex.words.length > 0 && (
+        {ex?.words && ex.words.length > 0 && (
           <Section label="KEY WORDS">
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
               {ex.words.map((w) => (
                 <div key={w.word} style={{ fontSize: 14, lineHeight: 1.55, color: C.bodyInk }}>
-                  <span style={{ fontFamily: SERIF, fontWeight: 600, fontStyle: "italic" }}>{w.word}</span>{" "}
-                  &mdash; {w.meaning}
+                  <span style={{ fontFamily: SERIF, fontWeight: 600, fontStyle: "italic" }}>{w.word}</span> &mdash;{" "}
+                  {w.meaning}
                 </div>
               ))}
             </div>
@@ -249,7 +256,7 @@ export function Reader({ app }: { app: BibleApp }) {
           </Section>
         )}
 
-        {ex.lesson && (
+        {ex?.lesson && (
           <div style={{ marginTop: 22, background: C.lessonBg, borderRadius: 16, padding: "18px 20px" }}>
             <div style={kicker}>MAIN LESSON</div>
             <div
@@ -267,13 +274,13 @@ export function Reader({ app }: { app: BibleApp }) {
           </div>
         )}
 
-        {ex.apply && (
+        {ex?.apply && (
           <Section label="PRACTICAL APPLICATION">
             <div style={body}>{ex.apply}</div>
           </Section>
         )}
 
-        {ex.reflect && (
+        {ex?.reflect && (
           <Section label="REFLECTION">
             <div
               style={{
@@ -291,13 +298,13 @@ export function Reader({ app }: { app: BibleApp }) {
           </Section>
         )}
 
-        {ex.rel && ex.rel.length > 0 && (
+        {ex?.rel && ex.rel.length > 0 && (
           <Section label="RELATED VERSES">
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
               {ex.rel.map((r) => (
                 <div
                   key={r.ref}
-                  onClick={() => actions.showToast("Cross-reference navigation comes with full Bible data")}
+                  onClick={() => actions.showToast("Cross-reference navigation is coming soon")}
                   style={{ fontSize: 14, lineHeight: 1.55, color: C.bodyInk, cursor: "pointer" }}
                 >
                   <span style={{ fontWeight: 600, color: C.navy }}>{r.ref}</span> &mdash; {r.why}
@@ -340,7 +347,7 @@ export function Reader({ app }: { app: BibleApp }) {
             onKeyDown={(e) => {
               if (e.key === "Enter") actions.submitAsk();
             }}
-            placeholder={`Ask a question about John 1:${verseNum}…`}
+            placeholder={`Ask a question about ${bookName} ${s.chapter}:${verseNum}…`}
             style={{
               flex: 1,
               border: "1px solid rgba(22,34,46,.14)",
@@ -397,8 +404,8 @@ export function Reader({ app }: { app: BibleApp }) {
         )}
 
         <div style={{ fontSize: 12, color: C.faint, marginTop: 14, lineHeight: 1.5 }}>
-          AI commentary explains Scripture in plain language. It is study help, not divine authority
-          &mdash; Christians sometimes interpret passages differently.
+          AI commentary explains Scripture in plain language. It is study help, not divine authority &mdash;
+          Christians sometimes interpret passages differently.
         </div>
       </div>
 
@@ -438,7 +445,7 @@ export function Reader({ app }: { app: BibleApp }) {
             cursor: "pointer",
           }}
         >
-          {vi === VERSE_COUNT - 1 ? "Finish chapter ✦" : "Next verse ›"}
+          {vi === chapterLen - 1 ? "Finish chapter ✦" : "Next verse ›"}
         </button>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import type { BibleApp } from "../useBibleApp";
+import { isSeed } from "../useBibleApp";
 import { QUIZ, SUMMARY } from "../data";
+import { bookMeta, BOOK_IDS } from "../bible";
 import { C, SERIF, WHITE_CARD } from "../theme";
 
 const kicker: React.CSSProperties = {
@@ -22,9 +24,85 @@ function Bullets({ items }: { items: string[] }) {
   );
 }
 
+function nextChapterLabel(bookId: string, chapter: number): string | null {
+  const meta = bookMeta(bookId);
+  if (!meta) return null;
+  if (chapter < meta.chapters) return `${meta.name} ${chapter + 1}`;
+  const bi = BOOK_IDS.indexOf(bookId) + 1;
+  if (bi < BOOK_IDS.length) return `${bookMeta(BOOK_IDS[bi])!.name} 1`;
+  return null;
+}
+
+const outlineBtn: React.CSSProperties = {
+  border: "1px solid rgba(22,34,46,.16)",
+  background: "#fff",
+  color: C.navy,
+  fontSize: 15,
+  fontWeight: 600,
+  padding: "16px 24px",
+  borderRadius: 16,
+  cursor: "pointer",
+};
+const primaryBtn: React.CSSProperties = {
+  flex: 1,
+  border: "none",
+  background: C.navy,
+  color: C.cream,
+  fontSize: 15,
+  fontWeight: 600,
+  padding: "16px 24px",
+  borderRadius: 16,
+  cursor: "pointer",
+};
+
 export function Done({ app }: { app: BibleApp }) {
   const { s, actions } = app;
+  const bookName = bookMeta(s.bookId)?.name ?? "";
   const grid2 = s.isMobile ? "1fr" : "1fr 1fr";
+  const nextLabel = nextChapterLabel(s.bookId, s.chapter);
+
+  const footerNav = (
+    <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+      <button className="be-outline" onClick={actions.readAgain} style={outlineBtn}>
+        Read again
+      </button>
+      {nextLabel && (
+        <button className="be-primary" onClick={actions.nextChapter} style={primaryBtn}>
+          Continue to {nextLabel} &rsaquo;
+        </button>
+      )}
+    </div>
+  );
+
+  // Rich summary + quiz only for the seeded chapter (John 1).
+  if (!isSeed(s.bookId, s.chapter)) {
+    return (
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 20px 0" }}>
+        <div
+          style={{
+            background: C.navy,
+            color: C.cream,
+            borderRadius: 24,
+            padding: "40px 38px",
+            boxShadow: "0 16px 40px rgba(22,34,46,.2)",
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".16em", color: C.nightGold }}>
+            CHAPTER COMPLETE
+          </div>
+          <div style={{ fontFamily: SERIF, fontSize: 34, marginTop: 10 }}>
+            Well done &mdash; you finished {bookName} {s.chapter}.
+          </div>
+          <div style={{ fontSize: 15, lineHeight: 1.65, marginTop: 14, color: "rgba(246,244,239,.85)", textWrap: "pretty" }}>
+            Keep going one chapter at a time. Use the reader to study any verse in depth, or tap Listen to hear it read
+            aloud.
+          </div>
+        </div>
+        {footerNav}
+      </div>
+    );
+  }
+
   const picks = s.quizPicks;
   const score = QUIZ.reduce((n, q, i) => n + (picks[i] === q.a ? 1 : 0), 0);
   const people = [...SUMMARY.people, ...SUMMARY.places];
@@ -45,7 +123,7 @@ export function Done({ app }: { app: BibleApp }) {
           CHAPTER COMPLETE
         </div>
         <div style={{ fontFamily: SERIF, fontSize: 34, marginTop: 10 }}>
-          Well done &mdash; you finished John 1.
+          Well done &mdash; you finished {bookName} {s.chapter}.
         </div>
         <div style={{ fontSize: 15, lineHeight: 1.65, marginTop: 14, color: "rgba(246,244,239,.85)", textWrap: "pretty" }}>
           {SUMMARY.message}
@@ -117,7 +195,7 @@ export function Done({ app }: { app: BibleApp }) {
       {/* quiz */}
       <div style={{ ...WHITE_CARD, padding: "30px 34px", marginTop: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 600 }}>Quick quiz</div>
-        <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Five questions on John 1.</div>
+        <div style={{ fontSize: 13, color: C.muted, marginTop: 4 }}>Five questions on {bookName} {s.chapter}.</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 20 }}>
           {QUIZ.map((q, qi) => (
             <div key={qi}>
@@ -187,9 +265,7 @@ export function Done({ app }: { app: BibleApp }) {
               flexWrap: "wrap",
             }}
           >
-            <div style={{ fontFamily: SERIF, fontSize: 20, color: C.lessonInk }}>
-              You scored {score} of 5
-            </div>
+            <div style={{ fontFamily: SERIF, fontSize: 20, color: C.lessonInk }}>You scored {score} of 5</div>
             <button
               onClick={actions.retryQuiz}
               style={{
@@ -229,42 +305,7 @@ export function Done({ app }: { app: BibleApp }) {
         )}
       </div>
 
-      {/* footer nav */}
-      <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
-        <button
-          className="be-outline"
-          onClick={actions.readAgain}
-          style={{
-            border: "1px solid rgba(22,34,46,.16)",
-            background: "#fff",
-            color: C.navy,
-            fontSize: 15,
-            fontWeight: 600,
-            padding: "16px 24px",
-            borderRadius: 16,
-            cursor: "pointer",
-          }}
-        >
-          Read again
-        </button>
-        <button
-          className="be-primary"
-          onClick={actions.nextChapter}
-          style={{
-            flex: 1,
-            border: "none",
-            background: C.navy,
-            color: C.cream,
-            fontSize: 15,
-            fontWeight: 600,
-            padding: "16px 24px",
-            borderRadius: 16,
-            cursor: "pointer",
-          }}
-        >
-          Continue to John 2 &rsaquo;
-        </button>
-      </div>
+      {footerNav}
     </div>
   );
 }

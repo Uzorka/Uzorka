@@ -1,4 +1,5 @@
 import type { BibleApp, Screen } from "../useBibleApp";
+import { bookMeta } from "../bible";
 import { C, SERIF } from "../theme";
 
 type Tab = { label: string; screen: Screen; active: Screen[] };
@@ -11,6 +12,8 @@ const TABS: Tab[] = [
 
 export function Header({ app }: { app: BibleApp }) {
   const { s, actions } = app;
+  const bookName = bookMeta(s.bookId)?.name ?? "";
+  const marker = `${bookName} ${s.chapter} : ${s.vi + 1}`;
   return (
     <div
       style={{
@@ -88,7 +91,7 @@ export function Header({ app }: { app: BibleApp }) {
         {!s.isMobile ? (
           <button
             className="be-primary"
-            onClick={() => actions.go("reader")}
+            onClick={actions.goContinue}
             style={{
               border: "none",
               background: C.navy,
@@ -101,11 +104,11 @@ export function Header({ app }: { app: BibleApp }) {
               cursor: "pointer",
             }}
           >
-            Continue · John 1:{s.vi + 1}
+            Continue · {marker}
           </button>
         ) : (
           <div style={{ fontSize: 12, fontWeight: 600, color: C.gold, whiteSpace: "nowrap" }}>
-            John 1 : {s.vi + 1}
+            {marker}
           </div>
         )}
       </div>

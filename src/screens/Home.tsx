@@ -1,5 +1,7 @@
 import type { BibleApp } from "../useBibleApp";
-import { BOOKS, TOPICS, VERSE_COUNT, VOTD } from "../data";
+import { chapterVersesOf } from "../useBibleApp";
+import { TOPICS, VOTD } from "../data";
+import { bookMeta, slug } from "../bible";
 import { C, SERIF, CARD_SHADOW } from "../theme";
 
 const QUICK_BOOKS = ["Genesis", "Psalms", "Proverbs", "Matthew", "John", "Romans"];
@@ -42,7 +44,9 @@ const pillOutline: React.CSSProperties = {
 export function Home({ app }: { app: BibleApp }) {
   const { s, actions } = app;
   const verseNum = s.vi + 1;
-  const progressPct = Math.round((verseNum / VERSE_COUNT) * 100) + "%";
+  const bookName = bookMeta(s.bookId)?.name ?? "";
+  const chapterLen = chapterVersesOf(s).length;
+  const progressPct = chapterLen ? Math.round((verseNum / chapterLen) * 100) + "%" : null;
   const grid2 = s.isMobile ? "1fr" : "1fr 1fr";
 
   return (
@@ -126,17 +130,21 @@ export function Home({ app }: { app: BibleApp }) {
         {/* Continue reading */}
         <div style={{ ...card, gap: 14 }}>
           <div style={kicker}>CONTINUE READING</div>
-          <div style={{ fontFamily: SERIF, fontSize: 26 }}>John 1 : {verseNum}</div>
+          <div style={{ fontFamily: SERIF, fontSize: 26 }}>
+            {bookName} {s.chapter} : {verseNum}
+          </div>
           <div style={{ height: 6, borderRadius: 3, background: "rgba(22,34,46,.08)", overflow: "hidden" }}>
-            <div style={{ height: 6, borderRadius: 3, background: C.goldBar, width: progressPct }} />
+            <div style={{ height: 6, borderRadius: 3, background: C.goldBar, width: progressPct ?? "0%" }} />
           </div>
           <div style={{ fontSize: 13, color: C.muted }}>
-            Verse {verseNum} of {VERSE_COUNT} · {progressPct} complete
+            {chapterLen
+              ? `Verse ${verseNum} of ${chapterLen} · ${progressPct} complete`
+              : `Verse ${verseNum}`}
           </div>
           <div>
             <button
               className="be-primary"
-              onClick={() => actions.go("reader")}
+              onClick={actions.goContinue}
               style={{
                 border: "none",
                 background: C.navy,
@@ -208,13 +216,13 @@ export function Home({ app }: { app: BibleApp }) {
           }}
         >
           {QUICK_BOOKS.map((name) => {
-            const book = BOOKS.find((b) => b.name === name);
+            const book = bookMeta(slug(name));
             const featured = name === "John";
             return (
               <button
                 key={name}
                 className="be-bookcard"
-                onClick={() => actions.openBookNamed(name)}
+                onClick={() => actions.openBook(slug(name))}
                 style={{
                   flex: "0 0 auto",
                   width: 132,

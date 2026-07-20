@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import type { BibleApp } from "../useBibleApp";
-import { JOHN1, VERSE_COUNT } from "../data";
+import { chapterVersesOf } from "../useBibleApp";
+import { bookMeta, cachedBook, displayRef, loadBook, parseRefKey } from "../bible";
 import { C, SERIF, CARD_SHADOW } from "../theme";
 
 const kicker: React.CSSProperties = {
@@ -38,11 +40,44 @@ const removeBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
+/** Look up a verse's text from cached book data, if available. */
+function verseText(key: string): string {
+  const r = parseRefKey(key);
+  if (!r) return "";
+  const b = cachedBook(r.bookId);
+  return b?.chapters[r.chapter - 1]?.[r.verse - 1] ?? "";
+}
+
+function refLabel(key: string): string {
+  const r = parseRefKey(key);
+  return r ? displayRef(r) : key;
+}
+
 export function Library({ app }: { app: BibleApp }) {
   const { s, actions } = app;
-  const progressPct = Math.round(((s.vi + 1) / VERSE_COUNT) * 100) + "%";
+  const [, force] = useState(0);
   const bms = Object.keys(s.bookmarks);
   const nts = Object.keys(s.notes);
+
+  // Ensure books referenced by saved verses/notes are loaded so we can show
+  // excerpts even after a reload (only the reading book is preloaded).
+  useEffect(() => {
+    const ids = new Set<string>();
+    for (const k of [...bms, ...nts]) {
+      const r = parseRefKey(k);
+      if (r && !cachedBook(r.bookId)) ids.add(r.bookId);
+    }
+    let alive = true;
+    ids.forEach((id) => loadBook(id).then(() => alive && force((n) => n + 1)).catch(() => {}));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bms.length, nts.length]);
+
+  const bookName = bookMeta(s.bookId)?.name ?? "";
+  const chapterLen = chapterVersesOf(s).length;
+  const progressPct = chapterLen ? Math.round(((s.vi + 1) / chapterLen) * 100) + "%" : "0%";
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "36px 20px 0" }}>
@@ -52,7 +87,9 @@ export function Library({ app }: { app: BibleApp }) {
       <div style={{ ...cardBox, marginTop: 20 }}>
         <div style={kicker}>READING PROGRESS</div>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 14 }}>
-          <div style={{ fontFamily: SERIF, fontSize: 22 }}>John 1</div>
+          <div style={{ fontFamily: SERIF, fontSize: 22 }}>
+            {bookName} {s.chapter}
+          </div>
           <div style={{ flex: 1, height: 6, borderRadius: 3, background: "rgba(22,34,46,.08)", overflow: "hidden" }}>
             <div style={{ height: 6, borderRadius: 3, background: C.goldBar, width: progressPct }} />
           </div>
@@ -69,13 +106,12 @@ export function Library({ app }: { app: BibleApp }) {
           </div>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-          {bms.map((ref) => {
-            const n = parseInt(ref.split(":")[1], 10);
-            const full = JOHN1[n - 1] || "";
-            const excerpt = full.slice(0, 90) + (full.length > 90 ? "…" : "");
+          {bms.map((key) => {
+            const full = verseText(key);
+            const excerpt = full ? full.slice(0, 90) + (full.length > 90 ? "…" : "") : "";
             return (
               <div
-                key={ref}
+                key={key}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -85,15 +121,17 @@ export function Library({ app }: { app: BibleApp }) {
                 }}
               >
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{ref}</div>
-                  <div style={{ fontFamily: SERIF, fontSize: 15, lineHeight: 1.5, marginTop: 2 }}>
-                    &ldquo;{excerpt}&rdquo;
-                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{refLabel(key)}</div>
+                  {excerpt && (
+                    <div style={{ fontFamily: SERIF, fontSize: 15, lineHeight: 1.5, marginTop: 2 }}>
+                      &ldquo;{excerpt}&rdquo;
+                    </div>
+                  )}
                 </div>
-                <button style={smallOpen} onClick={() => actions.openRef(ref)}>
+                <button style={smallOpen} onClick={() => actions.openRefKey(key)}>
                   Open
                 </button>
-                <button className="be-remove" style={removeBtn} onClick={() => actions.removeBookmark(ref)}>
+                <button className="be-remove" style={removeBtn} onClick={() => actions.removeBookmark(key)}>
                   Remove
                 </button>
               </div>
@@ -111,9 +149,9 @@ export function Library({ app }: { app: BibleApp }) {
           </div>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 8 }}>
-          {nts.map((ref) => (
+          {nts.map((key) => (
             <div
-              key={ref}
+              key={key}
               style={{
                 display: "flex",
                 alignItems: "flex-start",
@@ -123,15 +161,15 @@ export function Library({ app }: { app: BibleApp }) {
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{ref}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{refLabel(key)}</div>
                 <div style={{ fontSize: 14, lineHeight: 1.55, marginTop: 3, color: C.bodyInk, whiteSpace: "pre-wrap" }}>
-                  {s.notes[ref]}
+                  {s.notes[key]}
                 </div>
               </div>
-              <button style={smallOpen} onClick={() => actions.openRef(ref)}>
+              <button style={smallOpen} onClick={() => actions.openRefKey(key)}>
                 Open
               </button>
-              <button className="be-remove" style={removeBtn} onClick={() => actions.removeNote(ref)}>
+              <button className="be-remove" style={removeBtn} onClick={() => actions.removeNote(key)}>
                 Delete
               </button>
             </div>

@@ -1,8 +1,13 @@
 import type { BibleApp } from "../useBibleApp";
+import { bookMeta } from "../bible";
 import { C, SERIF } from "../theme";
 
 export function Chapters({ app }: { app: BibleApp }) {
-  const { actions } = app;
+  const { s, actions } = app;
+  const meta = bookMeta(s.browseBookId);
+  if (!meta) return null;
+  const onThisBook = s.bookId === meta.id;
+
   return (
     <div style={{ maxWidth: 880, margin: "0 auto", padding: "36px 20px 0" }}>
       <button
@@ -20,8 +25,13 @@ export function Chapters({ app }: { app: BibleApp }) {
       >
         &lsaquo; All books
       </button>
-      <h2 style={{ fontFamily: SERIF, fontWeight: 500, fontSize: 32, margin: "10px 0 4px" }}>John</h2>
-      <div style={{ fontSize: 14, color: C.muted }}>21 chapters · Gospel · New Testament</div>
+      <h2 style={{ fontFamily: SERIF, fontWeight: 500, fontSize: 32, margin: "10px 0 4px" }}>
+        {meta.name}
+      </h2>
+      <div style={{ fontSize: 14, color: C.muted }}>
+        {meta.chapters} {meta.chapters === 1 ? "chapter" : "chapters"} ·{" "}
+        {meta.testament === "OT" ? "Old Testament" : "New Testament"}
+      </div>
       <div
         style={{
           display: "grid",
@@ -31,9 +41,9 @@ export function Chapters({ app }: { app: BibleApp }) {
           maxWidth: 620,
         }}
       >
-        {Array.from({ length: 21 }, (_, i) => {
+        {Array.from({ length: meta.chapters }, (_, i) => {
           const n = i + 1;
-          const first = i === 0;
+          const current = onThisBook && s.chapter === n;
           return (
             <button
               key={n}
@@ -41,8 +51,8 @@ export function Chapters({ app }: { app: BibleApp }) {
               onClick={() => actions.openChapter(n)}
               style={{
                 border: "1px solid rgba(22,34,46,.14)",
-                background: first ? C.navy : "#fff",
-                color: first ? C.cream : C.ink,
+                background: current ? C.navy : "#fff",
+                color: current ? C.cream : C.ink,
                 fontSize: 15,
                 fontWeight: 600,
                 height: 52,
@@ -54,9 +64,6 @@ export function Chapters({ app }: { app: BibleApp }) {
             </button>
           );
         })}
-      </div>
-      <div style={{ fontSize: 13, color: C.faint, marginTop: 18 }}>
-        Chapter 1 includes full text and verse-by-verse study content.
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import type { BibleApp } from "../useBibleApp";
-import { JOHN1, VERSE_COUNT } from "../data";
-import { audioViOf } from "../useBibleApp";
+import { audioViOf, chapterVersesOf } from "../useBibleApp";
+import { bookMeta } from "../bible";
 import { C, SERIF } from "../theme";
 
 const roundCtl: React.CSSProperties = {
@@ -28,9 +28,12 @@ const chip: React.CSSProperties = {
 
 export function Listen({ app }: { app: BibleApp }) {
   const { s, actions, settings } = app;
+  const verses = chapterVersesOf(s);
+  const chapterLen = verses.length;
   const audioVi = audioViOf(s);
+  const bookName = bookMeta(s.bookId)?.name ?? "";
   const listenFont = Math.round(34 * settings.verseTextScale);
-  const listenPct = Math.round(((audioVi + 1) / VERSE_COUNT) * 100) + "%";
+  const listenPct = chapterLen ? Math.round(((audioVi + 1) / chapterLen) * 100) + "%" : "0%";
   const playGlyph = s.playing ? "❚❚" : "▶";
 
   return (
@@ -70,7 +73,7 @@ export function Listen({ app }: { app: BibleApp }) {
       </button>
 
       <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: ".18em", color: C.nightGold }}>
-        LISTENING · JOHN 1 : {audioVi + 1}
+        LISTENING · {bookName.toUpperCase()} {s.chapter} : {audioVi + 1}
       </div>
       <div
         style={{
@@ -83,7 +86,7 @@ export function Listen({ app }: { app: BibleApp }) {
           textWrap: "pretty",
         }}
       >
-        &ldquo;{JOHN1[audioVi]}&rdquo;
+        &ldquo;{verses[audioVi] ?? ""}&rdquo;
       </div>
 
       <div style={{ width: "100%", maxWidth: 420, marginTop: 40 }}>
@@ -100,7 +103,7 @@ export function Listen({ app }: { app: BibleApp }) {
           }}
         >
           <span>Verse {audioVi + 1}</span>
-          <span>of {VERSE_COUNT}</span>
+          <span>of {chapterLen}</span>
         </div>
       </div>
 
