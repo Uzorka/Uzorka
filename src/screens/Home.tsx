@@ -1,8 +1,14 @@
 import type { BibleApp } from "../useBibleApp";
-import { TOPICS, VERSE_COUNT, VOTD } from "../data";
+import { BOOKS, TOPICS, VERSE_COUNT, VOTD } from "../data";
 import { C, SERIF, CARD_SHADOW } from "../theme";
 
 const QUICK_BOOKS = ["Genesis", "Psalms", "Proverbs", "Matthew", "John", "Romans"];
+
+const sectionTitle: React.CSSProperties = {
+  fontSize: 20,
+  fontWeight: 700,
+  letterSpacing: "-.3px",
+};
 
 const kicker: React.CSSProperties = {
   fontSize: 11,
@@ -168,9 +174,9 @@ export function Home({ app }: { app: BibleApp }) {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1060, margin: "0 auto", padding: "28px 20px 0" }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>Browse the Bible</div>
+      <div style={{ maxWidth: 1060, margin: "0 auto", padding: "32px 0 0" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "0 20px" }}>
+          <div style={sectionTitle}>Browse the Bible</div>
           <button
             className="be-link"
             onClick={() => actions.go("books")}
@@ -178,61 +184,127 @@ export function Home({ app }: { app: BibleApp }) {
               border: "none",
               background: "none",
               cursor: "pointer",
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 600,
               color: C.navy,
+              padding: 0,
             }}
           >
             All 66 books &rsaquo;
           </button>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
-          {QUICK_BOOKS.map((name) => (
-            <button
-              key={name}
-              className="be-bookpill"
-              onClick={() => actions.openBookNamed(name)}
-              style={{
-                border: "1px solid rgba(22,34,46,.12)",
-                background: "#fff",
-                fontSize: 14,
-                padding: "10px 18px",
-                borderRadius: 999,
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-                color: C.ink,
-              }}
-            >
-              {name}
-            </button>
-          ))}
+
+        {/* horizontal-scroll book cards */}
+        <div
+          className="be-hscroll"
+          style={{
+            display: "flex",
+            gap: 12,
+            marginTop: 14,
+            overflowX: "auto",
+            padding: "2px 20px 14px",
+            scrollbarWidth: "none",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {QUICK_BOOKS.map((name) => {
+            const book = BOOKS.find((b) => b.name === name);
+            const featured = name === "John";
+            return (
+              <button
+                key={name}
+                className="be-bookcard"
+                onClick={() => actions.openBookNamed(name)}
+                style={{
+                  flex: "0 0 auto",
+                  width: 132,
+                  border: "none",
+                  background: "#fff",
+                  borderRadius: 18,
+                  padding: "18px 16px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  boxShadow: CARD_SHADOW,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <span
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
+                    background: featured ? C.navy : C.chipCream,
+                    color: featured ? "#e7d5a4" : C.gold,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: SERIF,
+                    fontSize: 19,
+                    fontWeight: 600,
+                  }}
+                >
+                  {name[0]}
+                </span>
+                <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>{name}</span>
+                  <span style={{ fontSize: 12, color: C.faint }}>{book?.chapters} chapters</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <div style={{ fontSize: 16, fontWeight: 600, marginTop: 28 }}>Popular topics</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "0 20px", marginTop: 22 }}>
+          <div style={sectionTitle}>Popular topics</div>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: s.isMobile ? "1fr 1fr" : "repeat(5,1fr)",
+            gap: 10,
+            marginTop: 14,
+            padding: "0 20px",
+          }}
+        >
           {TOPICS.map((name) => (
             <button
               key={name}
-              className="be-topic"
+              className="be-topiccard"
               onClick={() => actions.showToast("Topic pages come with the full version")}
               style={{
                 border: "none",
-                background: C.chipCream,
-                fontSize: 13,
-                fontWeight: 600,
-                padding: "9px 16px",
-                borderRadius: 999,
-                whiteSpace: "nowrap",
+                background: "#fff",
+                borderRadius: 16,
+                padding: "15px 16px",
                 cursor: "pointer",
-                color: C.chipInk,
+                textAlign: "left",
+                boxShadow: "0 1px 2px rgba(22,34,46,.05),0 4px 14px rgba(22,34,46,.05)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
               }}
             >
-              {name}
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: C.ink,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {name}
+              </span>
+              <span style={{ fontSize: 15, color: C.goldBar }}>&rsaquo;</span>
             </button>
           ))}
         </div>
 
-        <div style={{ fontSize: 12, color: C.faint, marginTop: 30 }}>
+        <div style={{ fontSize: 12, color: C.faint, marginTop: 30, padding: "0 20px" }}>
           Prototype seeded with the Gospel of John, chapter 1 (KJV, public domain).
         </div>
       </div>

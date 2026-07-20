@@ -75,6 +75,20 @@ button {
   border-color: #b08c46 !important;
 }
 
+/* Home book/topic cards — hover lifts the shadow */
+.be-bookcard:hover {
+  box-shadow: 0 2px 4px rgba(22, 34, 46, 0.08), 0 10px 26px rgba(22, 34, 46, 0.1) !important;
+}
+.be-topiccard:hover {
+  box-shadow: 0 2px 4px rgba(22, 34, 46, 0.08), 0 8px 22px rgba(22, 34, 46, 0.09) !important;
+}
+
+/* Hide the horizontal scrollbar on the book-cards row (WebKit; Firefox uses
+   scrollbar-width:none inline). */
+.be-hscroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* Topic chips */
 .be-topic:hover {
   background: #e7ddc5 !important;

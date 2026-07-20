@@ -58,48 +58,56 @@ export function Header({ app }: { app: BibleApp }) {
             Bible Explained
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          {TABS.map((t) => {
-            const on = t.active.includes(s.screen);
-            return (
-              <button
-                key={t.label}
-                className="be-navtab"
-                onClick={() => actions.go(t.screen)}
-                style={{
-                  border: "none",
-                  background: "none",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  padding: "8px 10px",
-                  borderRadius: 9,
-                  color: on ? C.ink : C.muted,
-                  fontWeight: on ? 700 : 500,
-                }}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
+        {!s.isMobile && (
+          <div style={{ display: "flex", gap: 4 }}>
+            {TABS.map((t) => {
+              const on = t.active.includes(s.screen);
+              return (
+                <button
+                  key={t.label}
+                  className="be-navtab"
+                  onClick={() => actions.go(t.screen)}
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    padding: "8px 10px",
+                    borderRadius: 9,
+                    color: on ? C.ink : C.muted,
+                    fontWeight: on ? 700 : 500,
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div style={{ flex: 1 }} />
-        <button
-          className="be-primary"
-          onClick={() => actions.go("reader")}
-          style={{
-            border: "none",
-            background: C.navy,
-            color: C.cream,
-            fontSize: 13,
-            fontWeight: 600,
-            padding: "9px 16px",
-            borderRadius: 999,
-            whiteSpace: "nowrap",
-            cursor: "pointer",
-          }}
-        >
-          Continue · John 1:{s.vi + 1}
-        </button>
+        {!s.isMobile ? (
+          <button
+            className="be-primary"
+            onClick={() => actions.go("reader")}
+            style={{
+              border: "none",
+              background: C.navy,
+              color: C.cream,
+              fontSize: 13,
+              fontWeight: 600,
+              padding: "9px 16px",
+              borderRadius: 999,
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+            }}
+          >
+            Continue · John 1:{s.vi + 1}
+          </button>
+        ) : (
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.gold, whiteSpace: "nowrap" }}>
+            John 1 : {s.vi + 1}
+          </div>
+        )}
       </div>
     </div>
   );
