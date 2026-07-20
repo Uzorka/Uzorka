@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Bible Explained — read the Bible and understand every verse, with plain-language explanations, audio narration, and guided study (KJV, public domain).",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

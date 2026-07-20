@@ -46,6 +46,26 @@ npm run build     # type-check and produce a production build in dist/
 npm run preview   # preview the production build
 ```
 
+Requires Node 20+. To exercise the AI proxy locally, run `vercel dev` (see below)
+instead of `npm run dev`.
+
+## Deploy to Vercel
+
+The app is static files (the SPA + the KJV JSON) plus one serverless function
+(`api/complete.js`). Vercel serves both.
+
+1. In Vercel, **Add New → Project** and import this GitHub repo. The included
+   `vercel.json` sets the framework (Vite), build command, and output directory
+   automatically.
+2. **Settings → Environment Variables**: add `ANTHROPIC_API_KEY` (and optionally
+   `ANTHROPIC_MODEL`) to enable the AI features. Skip this to ship without AI.
+3. **Deploy.** Every push to the connected branch redeploys automatically.
+
+A GitHub Actions workflow (`.github/workflows/ci.yml`) type-checks and builds on
+every push and pull request. For other static hosts (e.g. GitHub Pages), the
+`dist/` folder is fully static — but the `/api/complete` proxy needs a serverless
+platform, so on a pure-static host use the *custom endpoint* AI option below.
+
 ## AI configuration (optional)
 
 The **reading-level explanations** (Child / Beginner / Deep) and **Ask about
