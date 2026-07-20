@@ -2,6 +2,7 @@ import type { BibleApp } from "../useBibleApp";
 import { chapterVersesOf, curRef, isSeed } from "../useBibleApp";
 import { EX } from "../data";
 import { bookMeta, refKey } from "../bible";
+import { clickable } from "../a11y";
 import { C, SERIF, WHITE_CARD } from "../theme";
 import { Modes } from "../components/Modes";
 import { Segmented } from "../components/Segmented";
@@ -87,11 +88,11 @@ export function Reader({ app }: { app: BibleApp }) {
         }}
       >
         <div style={{ fontSize: 13, color: C.muted }}>
-          <span onClick={() => actions.go("books")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+          <span {...clickable(() => actions.go("books"))} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
             {bookName}
           </span>{" "}
           &rsaquo;{" "}
-          <span onClick={() => actions.openBook(s.bookId)} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+          <span {...clickable(() => actions.openBook(s.bookId))} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
             Chapter {s.chapter}
           </span>{" "}
           &rsaquo; Verse {verseNum}
@@ -304,7 +305,7 @@ export function Reader({ app }: { app: BibleApp }) {
               {ex.rel.map((r) => (
                 <div
                   key={r.ref}
-                  onClick={() => actions.showToast("Cross-reference navigation is coming soon")}
+                  {...clickable(() => actions.showToast("Cross-reference navigation is coming soon"))}
                   style={{ fontSize: 14, lineHeight: 1.55, color: C.bodyInk, cursor: "pointer" }}
                 >
                   <span style={{ fontWeight: 600, color: C.navy }}>{r.ref}</span> &mdash; {r.why}

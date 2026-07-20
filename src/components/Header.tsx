@@ -1,5 +1,6 @@
 import type { BibleApp, Screen } from "../useBibleApp";
 import { bookMeta } from "../bible";
+import { clickable } from "../a11y";
 import { C, SERIF } from "../theme";
 
 type Tab = { label: string; screen: Screen; active: Screen[] };
@@ -37,7 +38,7 @@ export function Header({ app }: { app: BibleApp }) {
         }}
       >
         <div
-          onClick={() => actions.go("home")}
+          {...clickable(() => actions.go("home"), "Bible Explained home")}
           style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
         >
           <div

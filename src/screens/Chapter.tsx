@@ -2,6 +2,7 @@ import type { BibleApp } from "../useBibleApp";
 import { audioViOf, chapterVersesOf, isSeed } from "../useBibleApp";
 import { EX } from "../data";
 import { bookMeta, refKey } from "../bible";
+import { clickable } from "../a11y";
 import { C, SERIF, SANS, CARD_SHADOW_LG } from "../theme";
 import { Modes } from "../components/Modes";
 import { SkeletonLines } from "../components/Skeleton";
@@ -37,11 +38,11 @@ export function Chapter({ app }: { app: BibleApp }) {
           }}
         >
           <div style={{ fontSize: 13, color: C.muted }}>
-            <span onClick={() => actions.go("books")} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+            <span {...clickable(() => actions.go("books"))} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
               {bookName}
             </span>{" "}
             &rsaquo;{" "}
-            <span onClick={() => actions.openBook(s.bookId)} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
+            <span {...clickable(() => actions.openBook(s.bookId))} style={{ cursor: "pointer", color: C.navy, fontWeight: 600 }}>
               Chapter {s.chapter}
             </span>{" "}
             &rsaquo; Full chapter
@@ -74,7 +75,7 @@ export function Chapter({ app }: { app: BibleApp }) {
               return (
                 <div key={i} style={{ borderRadius: 14, background: bg, transition: "background .25s" }}>
                   <div
-                    onClick={() => actions.toggleExpanded(i)}
+                    {...clickable(() => actions.toggleExpanded(i), `Verse ${i + 1}: show study`)}
                     style={{ display: "flex", gap: 14, padding: "12px 8px", cursor: "pointer" }}
                   >
                     <div

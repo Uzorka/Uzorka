@@ -31,6 +31,13 @@ button {
   font-family: inherit;
 }
 
+/* Visible keyboard focus (only for keyboard nav, not mouse clicks). */
+:focus-visible {
+  outline: 2px solid #16324f;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 @keyframes bePulse {
   0%,
   100% {
