@@ -68,11 +68,17 @@ platform, so on a pure-static host use the *custom endpoint* AI option below.
 
 ## AI configuration (optional)
 
+> **AI is currently turned off.** The app ships with the AI study features
+> disabled (`AI_ENABLED = false` in `src/features.ts`), so it needs **no API
+> key** — you get whole-Bible reading, the Gospel of John 1's full built-in
+> study, audio, bookmarks/notes, and the quiz. To turn AI back on, set
+> `AI_ENABLED = true` and configure a provider (below). The client and proxy for
+> all providers remain in the codebase.
+
 The **reading-level explanations** (Child / Beginner / Deep) and **Ask about
 this verse** features call an AI model — **Anthropic, OpenAI, or Google Gemini**.
-Everything else works without any configuration — the Gospel of John 1 study and
-all Bible text are always available. When no backend is reachable, those
-features show a friendly "connect an API key" message.
+When enabled but no backend is reachable, those features show a friendly
+"connect an API key" message.
 
 > 💡 **Google Gemini has a free tier** ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) —
 > the easiest way to enable AI without paying. Anthropic and OpenAI are prepaid.

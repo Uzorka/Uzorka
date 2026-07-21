@@ -3,6 +3,7 @@ import { audioViOf, chapterVersesOf, isSeed } from "../useBibleApp";
 import { EX } from "../data";
 import { bookMeta, refKey } from "../bible";
 import { clickable } from "../a11y";
+import { AI_ENABLED } from "../features";
 import { C, SERIF, SANS, CARD_SHADOW_LG } from "../theme";
 import { Modes } from "../components/Modes";
 import { SkeletonLines } from "../components/Skeleton";
@@ -67,7 +68,9 @@ export function Chapter({ app }: { app: BibleApp }) {
           <div style={{ display: "flex", flexDirection: "column" }}>
             {verses.map((text, i) => {
               const ex = seed ? EX[i + 1] : undefined;
-              const open = !!s.expanded[i];
+              // A verse is expandable only when there's study to show.
+              const expandable = seed || AI_ENABLED;
+              const open = expandable && !!s.expanded[i];
               const bg = s.playingVi === i ? C.johnBadgeBg : open ? C.panelBg : "transparent";
               const aiKey = refKey({ bookId: s.bookId, chapter: s.chapter, verse: i + 1 }) + "|Standard";
               const aiText = s.aiCache[aiKey];
@@ -75,8 +78,8 @@ export function Chapter({ app }: { app: BibleApp }) {
               return (
                 <div key={i} style={{ borderRadius: 14, background: bg, transition: "background .25s" }}>
                   <div
-                    {...clickable(() => actions.toggleExpanded(i), `Verse ${i + 1}: show study`)}
-                    style={{ display: "flex", gap: 14, padding: "12px 8px", cursor: "pointer" }}
+                    {...(expandable ? clickable(() => actions.toggleExpanded(i), `Verse ${i + 1}: show study`) : {})}
+                    style={{ display: "flex", gap: 14, padding: "12px 8px", cursor: expandable ? "pointer" : "default" }}
                   >
                     <div
                       style={{

@@ -3,6 +3,7 @@ import { chapterVersesOf, curRef, isSeed } from "../useBibleApp";
 import { EX } from "../data";
 import { bookMeta, refKey } from "../bible";
 import { clickable } from "../a11y";
+import { AI_ENABLED } from "../features";
 import { C, SERIF, WHITE_CARD } from "../theme";
 import { Modes } from "../components/Modes";
 import { Segmented } from "../components/Segmented";
@@ -64,6 +65,8 @@ export function Reader({ app }: { app: BibleApp }) {
   const bmSaved = !!s.bookmarks[rk];
   const people = ex ? [...(ex.people || []), ...(ex.places || [])] : [];
   const hasAskAnswer = !!s.askAnswer && !s.askBusy;
+  // Study card only shows when there's content: seed study, or AI is enabled.
+  const showStudy = AI_ENABLED || !!ex;
 
   if (s.bookLoading && chapterLen === 0) {
     return (
@@ -207,7 +210,8 @@ export function Reader({ app }: { app: BibleApp }) {
         )}
       </div>
 
-      {/* understanding card */}
+      {/* understanding card — shown when there's study content */}
+      {showStudy && (
       <div style={{ ...WHITE_CARD, padding: "30px 34px", marginTop: 16 }}>
         <div
           style={{
@@ -219,7 +223,9 @@ export function Reader({ app }: { app: BibleApp }) {
           }}
         >
           <div style={{ fontSize: 16, fontWeight: 600 }}>Understanding this verse</div>
-          <Segmented items={LEVELS} active={s.level} onPick={(l) => actions.setLevel(l as never)} padding="6px 12px" />
+          {AI_ENABLED && (
+            <Segmented items={LEVELS} active={s.level} onPick={(l) => actions.setLevel(l as never)} padding="6px 12px" />
+          )}
         </div>
 
         <Section label="SIMPLE MEANING">
@@ -315,8 +321,10 @@ export function Reader({ app }: { app: BibleApp }) {
           </Section>
         )}
       </div>
+      )}
 
-      {/* ask card */}
+      {/* ask card — AI feature */}
+      {AI_ENABLED && (
       <div style={{ ...WHITE_CARD, padding: "30px 34px", marginTop: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 600 }}>Ask about this verse</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
@@ -409,6 +417,7 @@ export function Reader({ app }: { app: BibleApp }) {
           Christians sometimes interpret passages differently.
         </div>
       </div>
+      )}
 
       {/* prev / next */}
       <div style={{ display: "flex", gap: 12, marginTop: 20 }}>

@@ -12,6 +12,7 @@ import {
   type Ref,
 } from "./bible";
 import { AINotConfiguredError, complete, isAIConfigured } from "./ai";
+import { AI_ENABLED } from "./features";
 
 export type Level = "Child" | "Beginner" | "Standard" | "Deep";
 export type Screen =
@@ -630,9 +631,10 @@ export function useBibleApp(settings: Settings = DEFAULT_SETTINGS) {
   const toggleExpanded = useCallback(
     (i: number) => {
       set((prev) => ({ expanded: { ...prev.expanded, [i]: !prev.expanded[i] } }));
-      // For non-seed chapters, fetch the plain-language meaning on demand.
+      // For non-seed chapters, fetch the plain-language meaning on demand (only
+      // when the AI features are enabled).
       const st = stateRef.current;
-      if (!isSeed(st.bookId, st.chapter) && !st.expanded[i]) {
+      if (AI_ENABLED && !isSeed(st.bookId, st.chapter) && !st.expanded[i]) {
         fetchRef.current({ bookId: st.bookId, chapter: st.chapter, verse: i + 1 }, "Standard");
       }
     },
