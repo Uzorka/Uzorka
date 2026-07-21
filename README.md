@@ -69,48 +69,50 @@ platform, so on a pure-static host use the *custom endpoint* AI option below.
 ## AI configuration (optional)
 
 The **reading-level explanations** (Child / Beginner / Deep) and **Ask about
-this verse** features call an AI model. Everything else works without any
-configuration — the Gospel of John 1 study and all Bible text are always
-available. When no backend is reachable, those features show a friendly
-"connect an API key" message instead of an answer.
+this verse** features call an AI model — **Anthropic, OpenAI, or Google Gemini**.
+Everything else works without any configuration — the Gospel of John 1 study and
+all Bible text are always available. When no backend is reachable, those
+features show a friendly "connect an API key" message.
+
+> 💡 **Google Gemini has a free tier** ([aistudio.google.com/apikey](https://aistudio.google.com/apikey)) —
+> the easiest way to enable AI without paying. Anthropic and OpenAI are prepaid.
 
 ### Recommended: the bundled serverless proxy
 
-The repo ships a Vercel serverless function at `api/complete.js` that proxies
-Anthropic so your API key stays server-side (never in the browser). The client
-calls `/api/complete` by default — you just add a key:
+The repo ships a Vercel serverless function at `api/complete.js` that calls your
+chosen provider so the API key stays server-side (never in the browser). The
+client calls `/api/complete` by default — you just set env vars in Vercel
+(**Settings → Environment Variables**), then redeploy:
 
-1. Get an API key at [console.anthropic.com](https://console.anthropic.com/).
-2. In your Vercel project → **Settings → Environment Variables**, add
-   `ANTHROPIC_API_KEY`. Optionally add `ANTHROPIC_MODEL` (defaults to
-   `claude-opus-4-8`; set `claude-haiku-4-5` for a cheaper, faster option).
-3. Redeploy. The level tabs and Ask box now work.
+| Provider | Set `AI_PROVIDER` | Key var | Model var (optional, default) |
+|---|---|---|---|
+| Google Gemini | `gemini` | `GEMINI_API_KEY` | `GEMINI_MODEL` (`gemini-1.5-flash-latest`) |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` (`claude-opus-4-8`) |
+| OpenAI | `openai` | `OPENAI_API_KEY` | `OPENAI_MODEL` (`gpt-4o-mini`) |
 
-To run the proxy locally, use the Vercel CLI (`vercel dev`) with
-`ANTHROPIC_API_KEY` in your environment — plain `vite dev` serves the static app
-but not the `/api` function, so AI shows the "not configured" message.
+To run the proxy locally, use the Vercel CLI (`vercel dev`) with the env vars set
+— plain `vite dev` serves the static app but not the `/api` function.
 
-### Advanced: custom endpoint (no bundled proxy)
+### Quick local testing (no proxy)
 
-You can instead point the client at your own endpoint, resolved in this order:
+For your own machine only, put a key in `localStorage` — the client calls the
+provider directly (the key stays in your browser):
 
-1. **Runtime override** — a JSON object in `localStorage` under `be_ai_config`
-   (`setAIConfig()` in `src/ai.ts` writes it):
-   ```js
-   localStorage.setItem("be_ai_config",
-     JSON.stringify({ endpoint: "https://your-proxy.example/complete", apiKey: "…", model: "…" }));
-   ```
-2. **Build-time env** (`.env`): `VITE_AI_ENDPOINT`, `VITE_AI_API_KEY`, `VITE_AI_MODEL`.
-3. An **API key with no endpoint** → Anthropic's Messages API directly
-   (browser-direct, for local testing only).
+```js
+// In the browser DevTools console, then reload:
+localStorage.setItem("be_ai_config", JSON.stringify({ provider: "gemini", apiKey: "YOUR_KEY" }));
+// provider: "gemini" | "anthropic" | "openai"; add "model": "…" to override.
+```
 
-A custom endpoint receives `{ system, max_tokens, messages, model }` (plus an
-optional `Authorization: Bearer <apiKey>`) and may reply with a plain string or
-any of `{ text }`, `{ completion }`, `{ output }`, an Anthropic
-`{ content: [{ text }] }`, or an OpenAI-style `{ choices: [{ message: { content } }] }`.
+`setAIConfig()` in `src/ai.ts` does the same. You can also set build-time env in
+`.env`: `VITE_AI_PROVIDER`, `VITE_AI_API_KEY`, `VITE_AI_MODEL`, or point at a
+fully custom endpoint with `VITE_AI_ENDPOINT` (receives
+`{ system, max_tokens, messages, model }`, may reply with a string or any of
+`{ text }`, `{ completion }`, `{ output }`, Anthropic `{ content: [{ text }] }`,
+or OpenAI `{ choices: [{ message: { content } }] }`).
 
-> ⚠️ `VITE_*` values are bundled into the client and visible to anyone. Prefer
-> the server-side `/api/complete` proxy for anything public.
+> ⚠️ `VITE_*` values and `localStorage` keys live in the browser and are visible
+> to anyone using that page. For a public site, use the server-side proxy.
 
 ## Project structure
 

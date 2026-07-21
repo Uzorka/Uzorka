@@ -441,7 +441,8 @@ export function useBibleApp(settings: Settings = DEFAULT_SETTINGS) {
           const msg =
             e instanceof AINotConfiguredError
               ? NOT_CONFIGURED_LVL
-              : "The AI explanation could not be loaded right now. Please try again in a moment.";
+              : "Couldn’t load the explanation — " +
+                (e instanceof Error && e.message ? e.message : "please try again in a moment.");
           set((prev) => ({ aiCache: { ...prev.aiCache, [key]: msg }, aiBusy: omit(prev.aiBusy, key) }));
         }
       })();
@@ -485,7 +486,8 @@ export function useBibleApp(settings: Settings = DEFAULT_SETTINGS) {
           const msg =
             e instanceof AINotConfiguredError
               ? NOT_CONFIGURED_ASK
-              : "The AI assistant could not answer right now. Please try again in a moment.";
+              : "The assistant couldn’t answer — " +
+                (e instanceof Error && e.message ? e.message : "please try again in a moment.");
           set({ askAnswer: msg, askBusy: false });
         }
       })();
