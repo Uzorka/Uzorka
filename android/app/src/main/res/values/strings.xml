@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bible Explained</string>
+    <string name="title_activity_main">Bible Explained</string>
+    <string name="package_name">com.uzorka.bibleexplained</string>
+    <string name="custom_url_scheme">com.uzorka.bibleexplained</string>
+</resources>

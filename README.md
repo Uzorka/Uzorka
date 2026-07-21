@@ -4,8 +4,10 @@ Read the Bible and understand every verse — plain-language explanations, audio
 narration, historical context, and practical lessons. Study Scripture one verse
 at a time. The **complete King James Version** (all 66 books, public domain).
 
-Built with **Vite + React + TypeScript**. Implemented from a Claude Design
-handoff prototype, recreated pixel-for-pixel as a real application.
+Built with **Vite + React + TypeScript**, and packaged as a native **Android**
+app with [Capacitor](https://capacitorjs.com/) (see [`ANDROID.md`](ANDROID.md)).
+Implemented from a Claude Design handoff prototype, recreated pixel-for-pixel as
+a real application.
 
 ## Features
 
@@ -123,6 +125,8 @@ or OpenAI `{ choices: [{ message: { content } }] }`).
 ## Project structure
 
 ```
+android/            native Android shell (Capacitor) — see ANDROID.md
+capacitor.config.ts Capacitor config (app id, bundled web dir)
 api/
   complete.js       Vercel serverless proxy to Anthropic (keeps the key server-side)
 public/bible/       full KJV corpus, one JSON per book + index.json (lazy-loaded)
