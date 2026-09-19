@@ -3,7 +3,7 @@
 Scope: **Lagos only** for v1.
 Date: 19 September 2026.
 
-Screens and design system (private artifact, 11 artboards):
+Screens and design system (private artifact, 18 artboards):
 <https://claude.ai/artifact/6Y6YpV2c15UvhKHCiKy7ai>
 
 ---
@@ -316,6 +316,24 @@ The make-or-break asset. Seafood shot on ice, overhead, in daylight, consistent
 crop, one treatment across the catalog. Every image area in the mockups is a
 labelled placeholder. Budget a shoot before launch — stock photos of salmon
 fillets would actively undermine the Fresh Promise.
+
+### 4.20 Screen inventory
+
+Every screen below is drawn on the canvas. Six are live prototypes — their
+controls work, so the interaction can be judged rather than imagined.
+
+| Group | Screens |
+|---|---|
+| Foundations | Design system (glass, motion, components, states) |
+| Shop | Home · **Search** · Shop · **Filters sheet** · **Product** · **Quick-add sheet** |
+| Box & meals | **Build Your Box** · Shop by Meal · **Meal builder** |
+| Buy | Basket · Checkout (5 steps) · Order confirmed · Order tracking (7 stages) |
+| Desktop | Storefront · Cart drawer with toast |
+| Operations | Prices, stock & packing queue · Admin on a phone |
+
+**Bold** = live prototype. Flow is wired end to end: Home → Shop → Filters →
+Product → Basket → Checkout → Order confirmed → Tracking, with Build Your Box
+and Shop by Meal → Meal builder as the two alternative entry paths.
 
 ### 4.20 The bar
 
