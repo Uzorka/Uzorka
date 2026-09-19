@@ -1,10 +1,9 @@
-# Lagos Seafood Store — Product & Build Plan
+# ONEESTORE — Product, Design & Build Plan
 
-Working name: **Okùn** (Yoruba, "sea") — placeholder, easy to change.
 Scope: **Lagos only** for v1.
 Date: 19 September 2026.
 
-Screen designs (private artifact, 8 artboards):
+Screens and design system (private artifact, 11 artboards):
 <https://claude.ai/artifact/6Y6YpV2c15UvhKHCiKy7ai>
 
 ---
@@ -17,6 +16,7 @@ Screen designs (private artifact, 8 artboards):
 | v1 depth | **Full-stack, real orders** | Database, auth, payments and an admin dashboard from day one |
 | Payments | **Paystack** | Card, bank transfer, USSD, Verve. Webhook-verified |
 | Pricing | **Per kg, customer picks weight** | Weight-based cart, weight tolerance policy, actual-weight reconciliation |
+| Design language | **Glass, OS-inspired, ONEESTORE identity** | UI/UX is architecture here, not a later polish pass — see §4 |
 
 Pay-on-delivery is kept as a second rail because a meaningful share of Lagos
 customers will not prepay a new vendor for perishables. It is a toggle, not a
@@ -81,74 +81,261 @@ These are not garnish — each one changes a screen or a table.
 
 ---
 
-## 4. How it looks
+## 4. UI/UX architecture
 
-**Positioning:** premium-but-honest market stall, not a supermarket. The trust
-story (weighed on camera, charged on real weight, unbroken cold chain) is the
-hero, because that is the actual objection to overcome.
+UI/UX is a primary requirement, so it is specified here alongside the data model
+rather than left to implementation taste. Nothing below is decoration; each rule
+exists because it makes a customer's path shorter or clearer.
 
-**Palette** — ocean-and-salt, two accents sharing chroma:
+**The target feeling:** simple, intuitive, premium, clean, fast, calm,
+responsive, touch-friendly, consistent. A first-time customer should be able to
+shop without instructions.
+
+### 4.1 The glass rule
+
+The design language is glass-based and operating-system-inspired, in ONEESTORE's
+own identity — never a copy of another company's interface, icons or layouts.
+
+**Glass only ever sits over content.** Navigation, floating controls, the bottom
+nav, the cart drawer, customization panels, filters, modals, bottom sheets, order
+tracking controls, selected states. Content areas — product grids, copy, tables,
+forms — stay opaque and quiet so they can be scanned.
+
+| Surface | Background | Blur | Border |
+|---|---|---|---|
+| Glass light | `rgba(247,245,240,.72)` | `blur(24px) saturate(160%)` | `1px rgba(255,255,255,.68)` |
+| Glass dark | `rgba(11,43,46,.76)` | `blur(24px) saturate(140%)` | `1px rgba(255,255,255,.14)` |
+| Sheet | `rgba(255,255,255,.86)` | `blur(32px) saturate(150%)` | top `1px rgba(255,255,255,.85)` |
+
+Plus layered depth (`0 10px 34px rgba(11,43,46,.14)`) and an inset top highlight.
+Where `backdrop-filter` is unsupported, opacity rises to `.96`. **Glass never
+reduces readability** — text on glass stays full-opacity ink and is checked at
+4.5:1 against the lightest thing that can pass behind it. Glass does not carry
+body copy, and it is not applied everywhere.
+
+### 4.2 Colour and type
 
 | Token | Hex | Use |
 |---|---|---|
 | Salt | `#F7F5F0` | page ground |
-| Abyss | `#0B2B2E` | ink, dark bands |
-| Lagoon | `#0F5D57` | secondary surfaces, links, icons |
-| Clay | `#C64A26` | primary CTA, "add", price movement up |
-| Deep green | `#1C6B4A` | in-stock, confirmations, price movement down |
-| Amber | `#92500C` on `#FBEFD8` | cut-off countdown, weight policy |
+| Abyss | `#0B2B2E` | ink, dark glass, nav |
+| Lagoon | `#0F5D57` | selection, links, icons |
+| Clay | `#C64A26` | the one primary action |
+| Reef | `#1C6B4A` | available, confirmed |
+| Amber | `#92500C` on `#FBEFD8` | cut-off, weight policy |
 | Line | `#E2DED4` | borders |
 
-**Type:** **Fraunces** (display serif) for headings and prices on the
-storefront — warm, food-appropriate, and it is what makes the brand not look
-like a template. **Plus Jakarta Sans** for everything else. Admin stat values
-stay in the sans (a serif hero number reads as decoration on a dashboard).
+**Fraunces** (display serif) for headings and storefront prices; **Plus Jakarta
+Sans** for body, UI and every admin numeral. The wordmark is sans, wide-tracked.
 
-**Photography:** the make-or-break asset. Fish on ice, shot overhead in
-daylight, consistent crop. The mockups mark every image area as a labelled
-placeholder — budget a half-day shoot before launch. Stock photos of salmon
-fillets will actively hurt credibility here.
+### 4.3 Action hierarchy
 
-### Customer screens
+Every screen has one obvious primary action. Buttons are never equal weight.
 
-1. **Home** — cut-off countdown, today's-catch hero, category tiles, today's
-   market-price board, trust block, bottom tab bar.
-2. **Catalog** — search with Nigerian-name synonyms, filter chips (prep, fresh
-   vs frozen, size grade, availability), rows showing `₦/kg` and live stock.
-3. **Product** — gallery, price per kg, **prep selector**, **weight stepper**
-   (0.5 kg steps, min 1 kg, quick 1/2/3/5 kg pills), live total, the ±8%
-   explanation, zone-aware delivery line, cooking note.
-4. **Cart** — per-line weight steppers, cleaning charges broken out separately
-   from fish, zone delivery fee, free-delivery progress, promo field, cut-off
-   warning.
-5. **Checkout** — 3 steps: contact (phone, SMS-verified) → delivery (zone →
-   address → landmark → map pin → slot) → payment (Paystack / pay on delivery /
-   apply wallet credit).
-6. **Order tracking** — status timeline, the **weight reconciliation card**
-   (ordered vs packed vs refunded), rider card with call + WhatsApp, delivery
-   OTP, 2-hour quality-complaint window.
-7. **Account** — orders, one-tap reorder, addresses, wallet ledger, favourites,
-   referrals.
+- **Primary** — filled Clay, elevated. One per screen. (`Add to Basket`)
+- **Secondary** — outlined, ink. (`Save`)
+- **Tertiary** — text only, Lagoon. (`Ask about this seafood`)
 
-### Admin screens
+Six facts must read fast wherever they are relevant: **price, availability,
+weight, preparation, delivery, total.**
 
-1. **Dashboard** — orders today, kg still to pack, revenue, weight-refund rate.
-2. **Prices & stock** ← *the screen staff use every single morning.* Yesterday's
-   price beside an editable today's price, computed change %, stock in kg,
-   live/hide toggle per product, "copy yesterday", one **Publish to storefront**
-   action. Designed as a single-screen board, not a per-product edit form.
-3. **Packing queue** — order by order: enter packed weight per line, see the
-   auto-computed refund, print a packing slip, assign a rider.
-4. **Orders** — filters, state machine actions, refunds, notes.
-5. **Riders & zones** — zone fees, slot capacity per zone per day, rider
-   assignment, delivery proof.
-6. **Products, Customers, Promos, Reports, Settings.**
+### 4.4 Navigation
+
+**Desktop:** ONEESTORE logo · Shop · Build Your Box · Shop by Meal · Fresh
+Promise · Search · Account · Cart.
+
+**Mobile:** a floating glass bottom bar — **Home · Shop · Search · Orders ·
+Cart**. Not the desktop list shrunk; the rest lives in bottom sheets and
+contextual menus. Important actions sit within thumb reach, never stacked at the
+top of a tall screen.
+
+Bottom sheets carry filters, customization, delivery date, cart preview, address
+selection, sort and quick actions. Their desktop equivalents are popovers,
+drawers and dialogs — desktop patterns are never forced onto mobile.
+
+### 4.5 Search
+
+Tapping Search opens a focused overlay, glass over the page behind it.
+
+- **Idle:** search field, recent searches, popular seafood, categories.
+- **Typing:** suggestions appear immediately with image, name, price, category.
+  Typing `praw` surfaces Tiger Prawns, King Prawns, Brown Shrimps and the
+  *Prawns & Shrimp* category.
+- Matching runs over local names too — apoda, titus, ede, panla, osan.
+- States cross-fade; the overlay never blanks between them.
+
+### 4.6 Product customization — visual and progressive
+
+No long form. Three numbered steps, each responding visibly:
+
+1. **Choose weight** — `500g` `1kg` `2kg` `Custom`. Custom reveals a stepper.
+2. **How should we prepare it?** — Whole · Cleaned · Filleted · Steak Cut, each
+   showing its per-kg surcharge on the option itself, never revealed later.
+3. **Anything else?** — head included, skin removed, scored for grilling. Free,
+   and labelled as free.
+
+Price, **prepared-weight estimate** and order summary update in real time.
+Add to Cart stays reachable throughout via a sticky glass purchase bar.
+
+**Quick-add** is silent only where a product needs no mandatory choice. Anything
+requiring weight or preparation opens the customization bottom sheet instead of
+adding an arbitrary configuration.
+
+### 4.7 Adding to basket
+
+Adding never redirects. The item animates into the cart, the badge responds, and
+a lightweight toast — *Added to your basket* — offers *Continue Shopping* or
+*View Basket*. Desktop uses a cart drawer; mobile a bottom sheet or full-screen
+basket depending on space. Totals animate on quantity change.
+
+### 4.8 Build Your Box — signature interaction
+
+The box is drawn and fills as products go in: cells light up, the progress bar
+moves, item count and total update, and the price tier changes (3 kg → 5%,
+5 kg → 10%). Movement is spring-based and subtle. Drag is offered only where it
+genuinely helps; **tap controls always exist as the accessible path**.
+
+### 4.9 Shop by Meal
+
+Large photography — Seafood Okra, Seafood Pasta, Pepper Soup, Seafood Boil.
+Opening a meal reveals recommended seafood, serving estimate, quantities and an
+estimated total, with **Build This Meal** as the primary action. The customer
+edits the recommendation before anything reaches the basket.
+
+### 4.10 Checkout
+
+Five progressive steps, never one huge form: **Contact → Delivery → Schedule →
+Payment → Review**, with progress shown and completed steps ticked. Entered
+information survives moving between steps. Validation is inline and immediate,
+never held back until submit.
+
+Scheduling is a real date selector, not an HTML date input: a row of day cells
+showing availability, with the active state animating and **unavailable days
+explaining why** rather than silently greying out.
+
+### 4.11 Order tracking
+
+Seven stages: Order Confirmed → Sourcing Seafood → Quality Checked → Preparing →
+Packed → Out for Delivery → Delivered. The current stage is visually distinct,
+completed stages carry timestamps, and a status change animates the progress
+rather than replacing the screen.
+
+### 4.12 Motion system
+
+One shared set of tokens, not per-component invention.
+
+| Token | Duration | Easing | For |
+|---|---|---|---|
+| `--m-fast` | 120ms | `cubic-bezier(.2,0,0,1)` | press, toggle, pill snap, hover |
+| `--m-standard` | 220ms | `cubic-bezier(.2,0,0,1)` | selection, badge, inline validation |
+| `--m-page` | 320ms | `cubic-bezier(.32,.72,0,1)` | card → detail, cart → checkout |
+| `--m-spring` | 420ms | `cubic-bezier(.34,1.56,.64,1)` | box fill, cart badge, confirm pulse |
+| `--m-modal` | 280ms | `cubic-bezier(.32,.72,0,1)` | dialog, search overlay |
+| `--m-sheet` | 300ms | `cubic-bezier(.32,.72,0,1)` | bottom sheet, drawer |
+| `--m-exit` | 160ms | `cubic-bezier(.4,0,1,1)` | every dismissal |
+
+Motion serves state change, navigation, selection, feedback, hierarchy and
+continuity — never decoration. **Only `transform` and `opacity`.** Under
+`prefers-reduced-motion` every token collapses to an 80ms opacity fade: state
+still confirms, nothing travels. Motion is tested on a low-powered Android
+handset, not only on a laptop.
+
+Micro-interactions are owed to buttons, tabs, product selection, weight and
+preparation selection, favourites, cart, quantity controls, search, filters,
+checkout, order status and form validation — and none of them may feel slow.
+
+### 4.13 Feedback and states
+
+Buttons carry **default, hover, pressed, focus, loading, success, disabled**.
+Submitting shows its own progression — `Place Order → Processing… → Order
+Confirmed` — and duplicate submission is blocked. No full-screen spinners:
+skeleton product and order cards, progress indicators, and optimistic updates
+where safe, with layout held steady so nothing jumps.
+
+Transitions between related views are subtle and quick: product card → details,
+product → customization, cart → checkout, order list → order details, meal →
+meal builder. Nothing theatrical.
+
+Gestures — swipe to close a drawer or sheet, horizontal category and date
+browsing — are supported but **never required**; a visible control always exists.
+Since web haptics are unreliable, the same reassurance is carried visually: a
+small scale response, a selection snap, a confirmation pulse. No unsupported
+browser hacks.
+
+### 4.14 Context-aware interface
+
+Show controls only when they are useful. No cart → no checkout controls. Prep
+required → prep options appear. Unavailable zone → explain it and offer
+alternatives. Returning customer → *Order Again*, saved address, usual
+preparation. New customer → discovery and guidance. **Never preselect a paid
+option without making it obvious.**
+
+Customers never see internal complexity — procurement, supplier management,
+preparation workflow. ONEESTORE absorbs that.
+
+### 4.15 Empty, error and success states
+
+Empty states move the customer forward: *"Your basket is empty. Fresh seafood is
+waiting." → Browse Seafood.* Favourites: *"Nothing saved yet. Save seafood you
+love and find it here later."* Errors say what happened and what to do —
+*"We couldn't confirm this delivery address. Check the address or select another
+Lagos delivery area"*, never `Error 422` — and input is preserved. Order
+completion gets a proper confirmation screen: order number, delivery date,
+amount, delivery location, *Track Order*, *Continue Shopping*.
+
+### 4.16 Components
+
+Built once, reused, variants documented: `Button`, `IconButton`, `Card`,
+`GlassSurface`, `BottomSheet`, `Drawer`, `Dialog`, `ProductCard`, `Price`,
+`Badge`, `SegmentedControl`, `QuantitySelector`, `WeightSelector`,
+`PreparationSelector`, `DateSelector`, `Timeline`, `EmptyState`, `Skeleton`,
+`Toast`, `SearchOverlay`.
+
+Product cards stay simple — image, name, price, unit, availability — and are not
+overcrowded. Hover reveals secondary actions on devices that support it; tapping
+stays predictable on mobile.
+
+### 4.17 Admin, held to the same standard
+
+Admin answers five questions fast: what needs attention, what needs sourcing,
+what needs preparation, what goes out today, are there customer problems.
+Actionable information over decorative charts. Command-style quick actions —
+Add Product, Update Prices, Find Order, Create Delivery Zone, View Procurement.
+**Admin works on a phone**: complex tables become cards, not shrunken tables,
+with the important actions still reachable.
+
+### 4.18 Responsive review protocol
+
+No screen is complete until reviewed at **375, 430, 768, 1024 and 1440**,
+checking overflow, touch targets, text wrapping, spacing, images, navigation,
+sticky elements, bottom sheets, forms, loading states and animations.
+
+### 4.19 Photography
+
+The make-or-break asset. Seafood shot on ice, overhead, in daylight, consistent
+crop, one treatment across the catalog. Every image area in the mockups is a
+labelled placeholder. Budget a shoot before launch — stock photos of salmon
+fillets would actively undermine the Fresh Promise.
+
+### 4.20 The bar
+
+The finished product should make buying seafood simpler than a phone call, a
+WhatsApp message, an Instagram DM or a trip to the market. A customer should
+quickly know what is available, what it costs, how much they are buying, how it
+will be prepared, when it will arrive, and what stage their order is at.
 
 ---
 
 ## 5. Function map
 
 ### Must have to take a real order (v1)
+
+**Signature experiences**
+- **Build Your Box** — box state, weight tiers (3 kg → 5%, 5 kg → 10%), live fill
+- **Shop by Meal** — meals with recommended seafood and serving maths, editable
+  before it reaches the basket
+- **Fresh Promise** — the trust page the whole proposition rests on
+- **Search overlay** — recent, popular, categories, live suggestions over local names
 
 **Catalog & pricing**
 - Products with `price_per_kg_kobo`, `min_order_g`, `step_g`, `stock_g`
@@ -182,6 +369,11 @@ fillets will actively hurt credibility here.
 - Notifications at each state: WhatsApp Cloud API, SMS fallback, email
 - Quality complaint with photo upload, 2-hour window
 
+**Design system (built before the screens that use it)**
+- Tokens: colour, type, spacing, radii, glass surfaces, motion
+- The 20 components in §4.16, with documented variants
+- `prefers-reduced-motion` handling and the `backdrop-filter` fallback
+
 **Admin**
 - Role-based access: owner / manager / packer / rider
 - The daily price & stock board
@@ -192,7 +384,7 @@ fillets will actively hurt credibility here.
 
 Reviews with verified-purchase badges and photos · recipe/blog content for SEO ·
 loyalty points · referral links · abandoned-cart WhatsApp nudge · bundles and
-party packs · subscriptions ("2 kg croaker every Friday") · restaurant/B2B
+subscriptions ("2 kg croaker every Friday") · restaurant/B2B
 accounts with invoice terms · rider live location · multi-hub inventory ·
 Flutterwave as a second gateway · Lagos-wide → Ibadan/Abuja expansion.
 
@@ -245,6 +437,13 @@ deliveries          id, order_id, rider_id, dispatched_at, delivered_at,
                     proof_photo_url
 riders              id, name, phone, vehicle, plate, is_active
 
+boxes               id, customer_id, cart_id, capacity_g, tier_discount_pct
+box_items           id, box_id, product_id, prep_option_id, weight_g
+meals               id, slug, name, hero_image, serves, description
+meal_items          id, meal_id, product_id, suggested_g_per_serving, is_optional
+saved_items         id, customer_id, product_id, saved_at
+customer_prefs      id, customer_id, product_id, prep_option_id, options jsonb
+
 reviews             id, product_id, customer_id, order_id, rating, body,
                     photos[], is_verified_purchase
 promos              id, code, kind, value, min_order_kobo, uses, max_uses,
@@ -283,17 +482,21 @@ client's success callback.
 
 | # | Deliverable | Notes |
 |---|---|---|
-| **M0** | Repo, Next.js + Tailwind + Supabase skeleton, design tokens, seed catalog | The palette and type above become a Tailwind config |
-| **M1** | Storefront read path: home, catalog, product, search with synonyms | Real data from Supabase, no writes |
+| **M0** | Repo, Next.js + Tailwind + Supabase skeleton, **design tokens and the component library** (§4.16), motion tokens, glass surfaces | The system is built first — §4 is the spec. Every component reviewed at all five breakpoints |
+| **M1** | Storefront read path: home, catalog, product with 3-step customization, search overlay with synonyms | Real data from Supabase, no writes |
 | **M2** | Weight cart + pricing engine + **unit tests on the money maths** | The engine is pure and tested before any UI depends on it |
 | **M3** | Auth (phone OTP), addresses, zones, slots, cut-off logic | |
 | **M4** | Checkout + Paystack + webhooks + order state machine + emails | First real order possible at the end of this |
 | **M5** | Admin: price & stock board, packing queue with weight capture, wallet refunds, rider manifest | The business cannot operate without M5 |
-| **M6** | WhatsApp/SMS notifications, reviews, promos, wallet UI | |
+| **M6** | Build Your Box, Shop by Meal, Fresh Promise page | The signature experiences, once the engine underneath them is proven |
+| **M6b** | WhatsApp/SMS notifications, reviews, promos, wallet UI | |
 | **M7** | SEO, recipe content, PWA, load testing, launch hardening | |
 
 M2 before M3 is deliberate: the pricing engine is the highest-risk code in the
 project and it needs to be correct in isolation, not debugged through a UI.
+M0 before everything is the other deliberate choice — the brief is explicit that
+the experience is architecture, and a component library retrofitted after the
+screens is how interfaces end up inconsistent.
 
 ---
 
@@ -335,6 +538,11 @@ Flagging these because they gate go-live regardless of how the code goes:
    scheduled as second-wave.
 5. **Catalog breadth at launch** — 14 kinds is shown. Fewer SKUs done reliably
    beats a wide catalog that is half out of stock.
+6. **Box tiers** — 3 kg → 5% and 5 kg → 10% are placeholders. They need to come
+   out of your real margins before Build Your Box ships.
+7. **Meal list** — Seafood Okra, Pasta, Pepper Soup and Boil are a starting set.
+   Which meals actually sell in Lagos is your call, and the serving maths per
+   meal needs your input.
 
 ---
 
