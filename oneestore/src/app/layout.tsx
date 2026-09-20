@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
+import { AccountProvider } from "@/components/AccountProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { CartProvider } from "@/components/CartProvider";
 import { ToastProvider } from "@/components/Toast";
@@ -45,13 +46,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body>
-        <CartProvider>
-          <ToastProvider>
-            {/* Floating chrome overlays content, so every page ends clear of it. */}
-            <div>{children}</div>
-            <BottomNav />
-          </ToastProvider>
-        </CartProvider>
+        <AccountProvider>
+          <CartProvider>
+            <ToastProvider>
+              {/* Floating chrome overlays content, so every page ends clear of it. */}
+              <div>{children}</div>
+              <BottomNav />
+            </ToastProvider>
+          </CartProvider>
+        </AccountProvider>
       </body>
     </html>
   );

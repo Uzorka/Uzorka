@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useCart } from "@/components/CartProvider";
 import { FishMark, tintFor } from "@/components/FishMark";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProductCardSkeleton } from "@/components/ui/Skeleton";
 import { cartWeightG, isEmpty, priceCart } from "@/lib/cart";
@@ -271,17 +271,12 @@ export function BasketClient() {
         </span>
       </section>
 
-      {/*
-        Checkout is the next milestone. The action is present and priced so the
-        basket reads correctly, but disabled and labelled — a live button that
-        404s is worse than an honest one that waits.
-      */}
       <div className="glass-light fixed inset-x-0 bottom-0 z-30 flex flex-col gap-1.5 border-x-0 border-b-0 px-4 pt-3 pb-[104px]">
-        <Button size="lg" fullWidth disabled>
+        <ButtonLink href="/checkout" size="lg" fullWidth>
           Checkout — {formatNaira(totalKobo)}
-        </Button>
+        </ButtonLink>
         <span className="text-center text-[10.5px] text-ink-muted">
-          Payment opens next — delivery scheduling and Paystack are still being built.
+          Verify, choose an address and a slot — payment arrives next.
         </span>
       </div>
     </div>
