@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { useCart } from "@/components/CartProvider";
+import { cartLineCount } from "@/lib/cart";
 import type { ReactNode } from "react";
 
 /**
@@ -15,7 +18,6 @@ interface Tab {
   readonly href: string;
   readonly label: string;
   readonly icon: ReactNode;
-  readonly badge?: number;
 }
 
 const icon = (paths: ReactNode) => (
@@ -82,6 +84,11 @@ const TABS: readonly Tab[] = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { state, ready } = useCart();
+
+  // The badge appears only once the saved basket has been read, so it never
+  // flashes an empty count and then jumps.
+  const count = ready ? cartLineCount(state) : 0;
 
   /**
    * The product page has its own sticky purchase bar. Two stacked bars at the
@@ -97,6 +104,7 @@ export function BottomNav() {
     >
       {TABS.map((tab) => {
         const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+        const badge = tab.href === "/basket" && count > 0 ? count : undefined;
 
         return (
           <Link
@@ -112,9 +120,12 @@ export function BottomNav() {
             >
               <span className="relative flex items-center justify-center">
                 {tab.icon}
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="animate-pop absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9.5px] font-bold text-white">
-                    {tab.badge}
+                {badge !== undefined && (
+                  <span
+                    key={badge}
+                    className="animate-pop absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-clay px-1 text-[9.5px] font-bold text-white"
+                  >
+                    {badge}
                   </span>
                 )}
               </span>

@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { useCart } from "@/components/CartProvider";
+import { useToast } from "@/components/Toast";
 import { Button } from "@/components/ui/Button";
 import { PreparationSelector, WeightSelector, WeightStepper } from "@/components/ui/Selectors";
 import { formatNaira, formatWeight } from "@/lib/money";
@@ -19,11 +21,20 @@ import type { Grams, Product } from "@/lib/types";
 const QUICK_WEIGHTS: readonly Grams[] = [500, 1000, 2000];
 
 export function ProductCustomizer({ product }: { product: Product }) {
+  const { dispatch, remainingG } = useCart();
+  const { show } = useToast();
+
   const [weightG, setWeightG] = useState<Grams>(normalizeWeight(product, 1000));
   const [custom, setCustom] = useState(false);
   const [prepId, setPrepId] = useState<string | null>(null);
 
-  const maxG = useMemo(() => normalizeWeight(product, product.stockG), [product]);
+  // What is left after whatever the basket already holds of this fish.
+  const availableG = remainingG(product.id);
+  const maxG = useMemo(
+    () => normalizeWeight({ ...product, stockG: availableG }, availableG),
+    [product, availableG],
+  );
+  const soldOut = maxG <= 0;
 
   // Nothing is priced until a preparation is chosen, so the preview uses the
   // first option while the customer decides.
@@ -38,6 +49,20 @@ export function ProductCustomizer({ product }: { product: Product }) {
 
   function setWeight(next: Grams) {
     setWeightG(normalizeWeight(product, next));
+  }
+
+  function addToBasket() {
+    if (prepId === null) return;
+
+    dispatch({ type: "add", productId: product.id, prepId, weightG });
+
+    const prepName = product.preps.find((p) => p.id === prepId)?.name ?? "";
+    show({
+      title: "Added to your basket",
+      detail: `${product.name} · ${formatWeight(weightG)} · ${prepName.toLowerCase()}`,
+      href: "/basket",
+      actionLabel: "View",
+    });
   }
 
   return (
@@ -70,9 +95,15 @@ export function ProductCustomizer({ product }: { product: Product }) {
 
         <span className="text-[11.5px] text-ink-muted">
           {pieces !== null
-            ? `About ${pieces} ${pieces === 1 ? "fish" : "fish"} · ${product.sizeGrade}`
+            ? `About ${pieces} fish · ${product.sizeGrade}`
             : product.sizeGrade}
         </span>
+
+        {availableG < product.stockG && !soldOut && (
+          <span className="text-[11.5px] font-semibold text-amber">
+            {formatWeight(availableG)} left — the rest is already in your basket.
+          </span>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">
@@ -124,8 +155,8 @@ export function ProductCustomizer({ product }: { product: Product }) {
           </span>
         </div>
 
-        <Button size="lg" className="flex-1" disabled={!chosen}>
-          {chosen ? "Add to Basket" : "Choose a preparation"}
+        <Button size="lg" className="flex-1" disabled={!chosen || soldOut} onClick={addToBasket}>
+          {soldOut ? "All of it is in your basket" : chosen ? "Add to Basket" : "Choose a preparation"}
         </Button>
       </div>
     </div>

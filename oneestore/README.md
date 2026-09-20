@@ -26,8 +26,8 @@ npm run typecheck  # tsc --noEmit
 npm run build      # production build
 ```
 
-No environment variables are needed yet: the storefront reads a seed catalog.
-`.env.example` lists what M2 onwards will need.
+No environment variables are needed yet: the storefront reads a seed catalog and
+keeps the basket in localStorage. `.env.example` lists what M3 onwards will need.
 
 ---
 
@@ -51,15 +51,18 @@ that moves every morning:
 | Packed weight must land within ±8% of what was ordered | `TOLERANCE_BPS`, `isWithinTolerance` |
 | Packed under → wallet credit. Packed over → we absorb it | `reconcileLine` |
 | A card is **never** charged above the authorised amount | `reconcileLine` |
+| Two lines of the same fish cannot outsell its stock between them | `remainingStockG`, `cartReducer` |
+| A saved basket is restored with its prices, not today's | `restore`, never replayed adds |
 
 That last rule is not a preference. Charging a card above what the customer
 approved collects chargebacks and destroys the trust the whole proposition
 rests on, so the engine has no code path that can do it.
 
-`src/lib/pricing.ts` is pure — no I/O, no React, no framework. It is covered by
-64 tests in `pricing.test.ts` and `delivery.test.ts`, several of which assert
-the exact figures used in the design so the screens and the maths cannot drift
-apart.
+`src/lib/pricing.ts` and `src/lib/cart.ts` are pure — no I/O, no React, no
+framework. They are covered by 102 tests, several of which assert the exact
+figures used in the design so the screens and the maths cannot drift apart.
+`CartProvider` is a thin wrapper that only holds state and talks to
+localStorage; no rule lives in it.
 
 ---
 
@@ -72,11 +75,14 @@ src/
     shop/                 catalog by category
     product/[slug]/       product + the three-step customizer (client)
     search/               live search, matches local names
-    basket/  orders/      honest empty states until M2
+    basket/               the basket, priced by the engine
+    orders/               honest empty state until orders exist
     globals.css           design tokens, glass, motion
   components/
     ui/                   Button, Badge, Price, Selectors, Skeleton, EmptyState…
-    BottomNav.tsx         floating glass nav
+    BottomNav.tsx         floating glass nav, live basket badge
+    CartProvider.tsx      React wrapper over the cart reducer
+    Toast.tsx             confirmations that never interrupt
     TopBar.tsx            glass header
     ProductCard.tsx
     CutoffBanner.tsx      same-day countdown (client — it depends on the minute)
@@ -84,6 +90,7 @@ src/
     types.ts              Kobo, Grams, Product, CartLine…
     money.ts              kobo/gram helpers and formatting
     pricing.ts            THE ENGINE — weight, prices, tolerance, box, meals
+    cart.ts               basket reducer, aggregate stock, persistence
     delivery.ts           zones, fees, cut-off, slots
     seed.ts               placeholder catalog
 supabase/migrations/      schema with RLS
@@ -105,16 +112,25 @@ an 80ms opacity fade — state still confirms, nothing travels.
 
 ## Where this is up to
 
-**Done — M0 and M1:** design tokens and component library, the pricing and
-delivery engines with full test coverage, and the storefront read path (home,
-shop, product with working weight/preparation customization, live search).
+**Done — M0, M1, M2.**
 
-**Not done yet:** the basket and orders pages are honest empty states, because
-there is no cart store or backend behind them. Build Your Box and Shop by Meal
-have engine support (`priceBox`, `mealQuantities`) and designs, but no screens.
+- M0: design tokens, motion system, component library.
+- M1: pricing and delivery engines; storefront read path — home, shop, product
+  with working weight and preparation selection, live search over local names.
+- M2: the basket. Add from the product page without navigating away, a toast
+  that confirms it, a live badge, per-line weight stepping, removal, delivery
+  zone selection with the free-delivery threshold, price-drift acceptance, and
+  persistence across reloads. Aggregate stock is enforced across lines, so two
+  preparations of the same fish cannot outsell it between them.
 
-**Next — M2:** cart store with stock reservation, then Supabase behind the
-catalog, then Paystack and the order state machine.
+**Not done yet:** checkout. The basket's primary action is present and priced
+but disabled and labelled, because a live button that 404s is worse than an
+honest one that waits. Build Your Box and Shop by Meal have tested engine
+support (`priceBox`, `mealQuantities`) and designs, but no screens.
+
+**Next — M3 and M4:** phone OTP, addresses and slots, then Paystack with
+webhook verification and the order state machine. Supabase replaces `seed.ts`
+behind the same types, so nothing above `lib/` has to change.
 
 All catalog data is **placeholder**. Prices, stock, ratings, the ±8% band, zone
 fees, the 11 AM cut-off and the box tiers need your real numbers before launch,
