@@ -31,12 +31,23 @@ catalog, the basket and address book live in localStorage, and phone
 verification uses a stand-in that shows the code on screen instead of sending
 an SMS. `.env.example` lists what M4 onwards will need.
 
-### Seeing it live
+### Deploying it
 
-There is no hosted URL yet — it needs a deploy target. The fastest route is
-Vercel: import this repository at <https://vercel.com/new>, set **Root
-Directory** to `oneestore`, and deploy. No configuration is required; nothing
-here depends on a server-side environment variable yet.
+There is no hosted URL yet — it needs a deploy target. No environment variables
+are required: the app runs entirely on seed data.
+
+**From this repository**, at <https://vercel.com/new>:
+
+1. Import the repository.
+2. Set **Root Directory** to `oneestore`. This matters — the repository root is
+   a different, unrelated Vite app, and `vercel.json` here pins the framework to
+   Next.js so the two cannot be confused.
+3. The code is on a feature branch, not `main`. Either set that branch as the
+   Production Branch under Settings → Git, or take the preview URL Vercel
+   creates for it automatically.
+
+**From its own repository**, the root directory step disappears and `main` is
+the production branch — which is what the plan calls for anyway.
 
 ---
 
