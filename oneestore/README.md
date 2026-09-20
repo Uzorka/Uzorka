@@ -26,8 +26,17 @@ npm run typecheck  # tsc --noEmit
 npm run build      # production build
 ```
 
-No environment variables are needed yet: the storefront reads a seed catalog and
-keeps the basket in localStorage. `.env.example` lists what M3 onwards will need.
+No environment variables are needed to run it: the storefront reads a seed
+catalog, the basket and address book live in localStorage, and phone
+verification uses a stand-in that shows the code on screen instead of sending
+an SMS. `.env.example` lists what M4 onwards will need.
+
+### Seeing it live
+
+There is no hosted URL yet — it needs a deploy target. The fastest route is
+Vercel: import this repository at <https://vercel.com/new>, set **Root
+Directory** to `oneestore`, and deploy. No configuration is required; nothing
+here depends on a server-side environment variable yet.
 
 ---
 
@@ -53,6 +62,9 @@ that moves every morning:
 | A card is **never** charged above the authorised amount | `reconcileLine` |
 | Two lines of the same fish cannot outsell its stock between them | `remainingStockG`, `cartReducer` |
 | A saved basket is restored with its prices, not today's | `restore`, never replayed adds |
+| Four ways of typing a Lagos number are one account | `toE164` |
+| An address without a landmark is never saved | `validateAddress` |
+| Code limits are enforced in the verifier, not the form | `otp.ts` |
 
 That last rule is not a preference. Charging a card above what the customer
 approved collects chargebacks and destroys the trust the whole proposition
@@ -76,11 +88,13 @@ src/
     product/[slug]/       product + the three-step customizer (client)
     search/               live search, matches local names
     basket/               the basket, priced by the engine
+    checkout/             five steps; contact, delivery and schedule are live
     orders/               honest empty state until orders exist
     globals.css           design tokens, glass, motion
   components/
     ui/                   Button, Badge, Price, Selectors, Skeleton, EmptyState…
     BottomNav.tsx         floating glass nav, live basket badge
+    AccountProvider.tsx   verified phone + address book
     CartProvider.tsx      React wrapper over the cart reducer
     Toast.tsx             confirmations that never interrupt
     TopBar.tsx            glass header
@@ -88,6 +102,9 @@ src/
     CutoffBanner.tsx      same-day countdown (client — it depends on the minute)
   lib/
     types.ts              Kobo, Grams, Product, CartLine…
+    phone.ts              Nigerian number normalisation and validation
+    otp.ts                verification rules + the one SMS seam
+    address.ts            address validation and the address book
     money.ts              kobo/gram helpers and formatting
     pricing.ts            THE ENGINE — weight, prices, tolerance, box, meals
     cart.ts               basket reducer, aggregate stock, persistence
@@ -112,7 +129,7 @@ an 80ms opacity fade — state still confirms, nothing travels.
 
 ## Where this is up to
 
-**Done — M0, M1, M2.**
+**Done — M0, M1, M2, M3.**
 
 - M0: design tokens, motion system, component library.
 - M1: pricing and delivery engines; storefront read path — home, shop, product
@@ -123,14 +140,22 @@ an 80ms opacity fade — state still confirms, nothing travels.
   persistence across reloads. Aggregate stock is enforced across lines, so two
   preparations of the same fish cannot outsell it between them.
 
-**Not done yet:** checkout. The basket's primary action is present and priced
-but disabled and labelled, because a live button that 404s is worse than an
-honest one that waits. Build Your Box and Shop by Meal have tested engine
-support (`priceBox`, `mealQuantities`) and designs, but no screens.
+- M3: phone verification with real expiry, attempt and resend limits; an
+  address book that refuses an address without a landmark; and delivery
+  scheduling that explains every closed day. Checkout runs as five progressive
+  steps, of which the first three are live.
 
-**Next — M3 and M4:** phone OTP, addresses and slots, then Paystack with
-webhook verification and the order state machine. Supabase replaces `seed.ts`
-behind the same types, so nothing above `lib/` has to change.
+**Not done yet:** payment. The checkout's pay button is drawn, priced and
+inert, and says so on screen. Build Your Box and Shop by Meal have tested
+engine support (`priceBox`, `mealQuantities`) and designs, but no screens.
+
+**Two things are stand-ins, both clearly marked on screen.** Verification
+codes are shown in the page rather than sent, behind the `SmsSender` interface
+that Termii implements. The catalog is `seed.ts` rather than Supabase, behind
+the same types. Neither is a rewrite — each is one object to replace.
+
+**Next — M4:** Paystack with webhook verification, and the order state
+machine.
 
 All catalog data is **placeholder**. Prices, stock, ratings, the ±8% band, zone
 fees, the 11 AM cut-off and the box tiers need your real numbers before launch,
