@@ -1,0 +1,311 @@
+/* ============================================================================
+   ONEESTORE — navigation: desktop top bar, mobile floating bottom bar, menus.
+   ========================================================================== */
+
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  padding-top: var(--safe-t);
+}
+.topnav__inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  height: var(--nav-h);
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  /* Flex children default to min-width:auto and would push the bar wider than
+     the viewport rather than compacting. The nav sheds its widest parts by
+     width instead — see the queries at the end of this block. */
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .topnav__inner { gap: var(--s-5); }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  text-decoration: none;
+  color: var(--text);
+  flex: 0 0 auto;
+  border-radius: var(--r-sm);
+  /* A comfortable target, not just the height of the wordmark. */
+  min-height: var(--touch);
+}
+.brand:hover { text-decoration: none; }
+.brand__word {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.brand__accent { color: var(--brand); }
+@media (max-width: 400px) {
+  .brand__word { font-size: 15px; }
+}
+
+.topnav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.navlink {
+  position: relative;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: var(--t-sm);
+  font-weight: 580;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--m-fast) var(--e-out), background-color var(--m-fast) var(--e-out);
+}
+.navlink:hover {
+  color: var(--text);
+  background: var(--surface-sunken);
+  text-decoration: none;
+}
+.navlink.is-on { color: var(--brand); }
+/* The active rule grows from the centre rather than appearing. */
+.navlink__rule {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand);
+  transform: scaleX(0);
+  transition: transform var(--m-std) var(--e-snap);
+}
+.navlink.is-on .navlink__rule { transform: scaleX(1); }
+
+.topnav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* --- Search affordance, by available width -------------------------------
+   Below 1100px the wide field is the first thing to go: it is the largest
+   fixed-width element in the bar and the icon button does the same job. */
+.navsearch { display: none; }
+.topnav__searchicon { display: inline-flex; }
+@media (min-width: 1100px) {
+  .navsearch { display: flex; }
+  .topnav__searchicon { display: none; }
+}
+
+.navsearch {
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 38px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: var(--t-sm);
+  cursor: pointer;
+  min-width: 190px;
+  transition: border-color var(--m-fast) var(--e-out), color var(--m-fast) var(--e-out);
+}
+.navsearch:hover { border-color: var(--brand); color: var(--text-2); }
+.navsearch__kbd {
+  margin-left: auto;
+  font-family: var(--font-num);
+  font-size: var(--t-micro);
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+}
+
+.navbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: var(--touch);
+  padding: 0 var(--s-3);
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--t-sm);
+  font-weight: 580;
+  cursor: pointer;
+  transition: background-color var(--m-fast) var(--e-out), color var(--m-fast) var(--e-out);
+}
+.navbtn:hover { background: var(--surface-sunken); color: var(--text); }
+/* Labels beside the account and basket glyphs only once there is room. */
+.navbtn__label { display: none; }
+@media (min-width: 1180px) {
+  .navbtn__label { display: inline; }
+}
+.navbtn__icon { position: relative; display: grid; place-items: center; }
+.navbtn--cart {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.navbtn--cart:hover { background: var(--brand); color: var(--text-on-brand); }
+
+/* The badge: bumps on every add, keyed so it replays. */
+.cartbadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--coral-500);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 2px var(--surface);
+  animation: os-badge-bump var(--m-spring) var(--e-spring);
+}
+
+/* --- Floating bottom navigation (phones) --------------------------------- */
+
+.bottomnav {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(var(--safe-b) + 10px);
+  z-index: var(--z-bottomnav);
+  height: var(--bottomnav-h);
+  border-radius: var(--r-xl);
+  display: flex;
+  align-items: stretch;
+  padding: 5px;
+  gap: 2px;
+}
+@media (min-width: 768px) {
+  .bottomnav { display: none; }
+}
+
+.tabbtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-md);
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0 2px;
+  transition: color var(--m-fast) var(--e-out);
+}
+.tabbtn__icon { position: relative; display: grid; place-items: center; }
+.tabbtn__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+.tabbtn.is-on { color: var(--brand); }
+.tabbtn:active { transform: scale(0.94); }
+/* A soft halo behind the active tab rather than a hard pill — quieter, and it
+   reads at a glance on glass. */
+.tabbtn__glow {
+  position: absolute;
+  inset: -8px -12px;
+  border-radius: var(--r-md);
+  background: var(--brand-soft);
+  z-index: -1;
+  animation: os-pop var(--m-std) var(--e-snap);
+}
+.bottomnav .navbtn__icon { display: grid; place-items: center; }
+.bottomnav .cartbadge { box-shadow: 0 0 0 2px var(--glass-bg-strong); }
+
+/* --- More sheet ---------------------------------------------------------- */
+
+.menulist { display: flex; flex-direction: column; gap: 2px; }
+.menurow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 58px;
+  padding: var(--s-2) var(--s-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--m-fast) var(--e-out);
+}
+.menurow:hover, .menurow:active { background: var(--surface-sunken); }
+.menurow__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  display: grid;
+  place-items: center;
+  background: var(--brand-soft);
+  color: var(--brand);
+  flex: 0 0 auto;
+}
+.menurow__text { flex: 1; min-width: 0; }
+.menurow__label { display: block; font-size: var(--t-body); font-weight: 620; }
+.menurow__note { display: block; font-size: var(--t-xs); color: var(--text-2); }
+.menurow__chev { color: var(--text-3); flex: 0 0 auto; }
+
+.menufoot {
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.menufoot__theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.menufoot__label { font-size: var(--t-sm); font-weight: 600; color: var(--text-2); }
+
+/* --- Back bar ------------------------------------------------------------ */
+
+.backbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-4) 0 var(--s-2);
+}
+.backbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 var(--s-3) 0 var(--s-2);
+  border: none;
+  background: transparent;
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--m-fast) var(--e-out), background-color var(--m-fast) var(--e-out);
+}
+.backbar__btn:hover { color: var(--text); background: var(--surface-sunken); }
+.backbar__chev { transform: rotate(180deg); }

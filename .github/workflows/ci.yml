@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Type-check & build
+    name: Bible Explained — type-check & build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,5 +15,19 @@ jobs:
         with:
           node-version: 20
       # No committed lockfile, so use install (not ci).
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+
+  oneestore:
+    name: ONEESTORE — type-check & build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: oneestore
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - run: npm install --no-audit --no-fund
       - run: npm run build
