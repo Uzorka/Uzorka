@@ -1,5 +1,12 @@
 # Bible Explained
 
+> **This repository holds two applications.** This README covers *Bible
+> Explained*, at the repository root. **[ONEESTORE](oneestore/)** — a seafood
+> storefront for Lagos delivery — is a separate, self-contained app in
+> [`oneestore/`](oneestore/), with its own
+> [README](oneestore/README.md) and [design system](oneestore/DESIGN.md).
+
+
 Read the Bible and understand every verse — plain-language explanations, audio
 narration, historical context, and practical lessons. Study Scripture one verse
 at a time. The **complete King James Version** (all 66 books, public domain).

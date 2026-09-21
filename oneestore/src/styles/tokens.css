@@ -1,0 +1,341 @@
+/* ============================================================================
+   ONEESTORE — design tokens
+   ----------------------------------------------------------------------------
+   One source of truth for colour, type, space, depth, glass and motion.
+   Components never hard-code these values; they reference the variables, which
+   is what lets the whole system re-theme (dark mode) and calm down
+   (prefers-reduced-motion) from this single file.
+
+   Identity: deep-water ink, a tidal teal that carries every primary action, and
+   a warm coral used only to signal freshness. Cool, clean, coastal — ONEESTORE's
+   own palette, not a borrowed one.
+   ========================================================================== */
+
+:root {
+  /* --- Brand ramp: "tide" ------------------------------------------------- */
+  --tide-50: #eaf7f8;
+  --tide-100: #cdedef;
+  --tide-200: #9adade;
+  --tide-300: #5cc3c9;
+  --tide-400: #26a5ae;
+  --tide-500: #0f8b95;
+  --tide-600: #0a7078;
+  --tide-700: #0a595f;
+  --tide-800: #09444a;
+  --tide-900: #073236;
+
+  /* --- Ink: deep water, used for text and dark surfaces ------------------- */
+  --ink-900: #06161c;
+  --ink-800: #0b2129;
+  --ink-700: #123039;
+  --ink-600: #1d4351;
+  --ink-500: #35606f;
+  --ink-400: #5b8593;
+  --ink-300: #8fadb8;
+  --ink-200: #c2d4da;
+  --ink-100: #e2ebee;
+  --ink-50: #f1f5f6;
+
+  /* --- Freshness accent: coral. Signal colour, never decoration ----------- */
+  --coral-100: #ffe6e0;
+  --coral-300: #ff9f8b;
+  --coral-500: #f2603f;
+  --coral-600: #d94526;
+
+  /* --- Warm sand: premium touches, ratings, "chef" notes ------------------ */
+  --sand-100: #fbf0dc;
+  --sand-300: #ecc98e;
+  --sand-500: #c79343;
+  --sand-700: #8a6224;
+
+  /* --- Status ------------------------------------------------------------- */
+  --ok-100: #d9f2e4;
+  --ok-500: #18946a;
+  --ok-700: #0d6b4b;
+  --warn-100: #fdeecd;
+  --warn-500: #c98a12;
+  --warn-700: #8c5e07;
+  --bad-100: #fde3e0;
+  --bad-500: #d93f33;
+  --bad-700: #9c281e;
+
+  /* --- Semantic surfaces (light) ------------------------------------------ */
+  --bg: #f1f5f6;
+  --bg-deep: #e4ecee;
+  --surface: #ffffff;
+  --surface-2: #f7fafb;
+  --surface-sunken: #eaf1f2;
+  --surface-inverse: var(--ink-900);
+
+  --text: var(--ink-900);
+  --text-2: var(--ink-500);
+  /* Not --ink-400: that lands at 4.0:1 on white and 4.4:1 on the page
+     background, under AA for the small print it is used for (units, captions,
+     stat sub-labels). This is the darkest step that clears 4.5:1 on every
+     light surface in the system, including the tinted status fills. */
+  --text-3: #47707f;
+  --text-on-brand: #ffffff;
+  --text-on-inverse: #eef5f6;
+
+  --line: rgba(6, 22, 28, 0.09);
+  --line-strong: rgba(6, 22, 28, 0.16);
+
+  --brand: var(--tide-600);
+  --brand-hover: var(--tide-700);
+  --brand-press: var(--tide-800);
+  --brand-soft: var(--tide-50);
+  --brand-ring: rgba(15, 139, 149, 0.34);
+
+  /* --- Glass -------------------------------------------------------------- *
+     Four tiers, by how much content must read through them. Each pairs a
+     translucent fill with a hairline top highlight so the edge stays visible on
+     busy photography. Transparency is capped: text on glass always clears 4.5:1. */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-strong: rgba(255, 255, 255, 0.86);
+  --glass-bg-dim: rgba(255, 255, 255, 0.55);
+  --glass-bg-ink: rgba(6, 22, 28, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-border-outer: rgba(6, 22, 28, 0.08);
+  --glass-blur: 22px;
+  --glass-blur-sm: 12px;
+  --glass-saturate: 160%;
+  --glass-highlight: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0) 42%
+  );
+  --scrim: rgba(6, 22, 28, 0.38);
+
+  /* --- Elevation: soft, wide, low-contrast. Depth without heaviness ------- */
+  --e1: 0 1px 2px rgba(6, 22, 28, 0.05), 0 1px 3px rgba(6, 22, 28, 0.04);
+  --e2: 0 1px 2px rgba(6, 22, 28, 0.05), 0 6px 16px rgba(6, 22, 28, 0.06);
+  --e3: 0 1px 2px rgba(6, 22, 28, 0.05), 0 14px 34px rgba(6, 22, 28, 0.09);
+  --e4: 0 2px 4px rgba(6, 22, 28, 0.06), 0 26px 60px rgba(6, 22, 28, 0.14);
+  --e-brand: 0 6px 18px rgba(10, 112, 120, 0.26);
+  --inset-hair: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* --- Radii -------------------------------------------------------------- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-2xl: 32px;
+  --r-pill: 999px;
+
+  /* --- Space: 4pt base ---------------------------------------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 56px;
+  --s-10: 72px;
+
+  /* Page gutter: 16px on phones, opening up with the viewport. */
+  --gutter: 16px;
+  --maxw: 1240px;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI Variable",
+    "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI Variable Display", "Segoe UI", Inter, Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-num: ui-rounded, "SF Pro Rounded", "Segoe UI Variable", var(--font);
+
+  --t-display: clamp(30px, 6.2vw, 52px);
+  --t-h1: clamp(24px, 4.2vw, 36px);
+  --t-h2: clamp(19px, 2.6vw, 24px);
+  --t-h3: 17px;
+  --t-body: 15px;
+  --t-sm: 13.5px;
+  --t-xs: 12px;
+  --t-micro: 11px;
+
+  --track-display: -0.026em;
+  --track-tight: -0.014em;
+  --track-kicker: 0.12em;
+
+  /* --- Touch -------------------------------------------------------------- */
+  --touch: 44px;
+  --touch-lg: 52px;
+
+  /* --- Layers ------------------------------------------------------------- */
+  --z-sticky: 20;
+  --z-nav: 40;
+  --z-bottomnav: 45;
+  --z-scrim: 60;
+  --z-sheet: 70;
+  --z-toast: 90;
+
+  /* --- Chrome heights, so sticky areas and scroll padding agree ---------- */
+  --nav-h: 60px;
+  --bottomnav-h: 62px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+
+  /* ==========================================================================
+     MOTION SYSTEM
+     Six named roles. Components pick a role, never a number — that is what
+     keeps 40 screens feeling like one product, and what lets reduced-motion
+     switch the whole app off in six lines.
+     ======================================================================== */
+  --m-fast: 130ms;      /* interaction feedback: press, hover, ripple, badge   */
+  --m-std: 220ms;       /* standard state transition: selection, reveal, fade  */
+  --m-page: 300ms;      /* view-to-view navigation                             */
+  --m-spring: 460ms;    /* springy arrival: cart fly-in, box tiles, check      */
+  --m-modal: 260ms;     /* dialogs, popovers                                   */
+  --m-drawer: 340ms;    /* side drawers, bottom sheets                          */
+
+  --e-out: cubic-bezier(0.22, 0.61, 0.36, 1);      /* decelerate — arriving    */
+  --e-in: cubic-bezier(0.55, 0, 0.9, 0.45);        /* accelerate — leaving     */
+  --e-inout: cubic-bezier(0.4, 0, 0.2, 1);         /* moving within view       */
+  --e-spring: cubic-bezier(0.34, 1.46, 0.64, 1);   /* overshoot — confirming   */
+  --e-snap: cubic-bezier(0.2, 0.9, 0.24, 1.02);    /* selection snap           */
+}
+
+/* --- Wider viewports: roomier gutters, taller nav -------------------------- */
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+    --nav-h: 68px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+@media (min-width: 1440px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+/* --- Dark theme ----------------------------------------------------------- *
+   Not an inversion: the water gets deeper. Glass goes from white-frosted to
+   ink-frosted, and the tide accent lifts two steps so it still carries actions. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #051216;
+    --bg-deep: #030c0f;
+    --surface: #0c2028;
+    --surface-2: #102830;
+    --surface-sunken: #081a20;
+    --surface-inverse: #eaf3f4;
+
+    --text: #e9f3f4;
+    --text-2: #9fbcc4;
+    --text-3: #7aa0aa;
+    --text-on-brand: #04181a;
+    --text-on-inverse: var(--ink-900);
+
+    --line: rgba(190, 224, 231, 0.14);
+    --line-strong: rgba(190, 224, 231, 0.26);
+
+    --brand: var(--tide-300);
+    --brand-hover: var(--tide-200);
+    --brand-press: var(--tide-100);
+    --brand-soft: rgba(92, 195, 201, 0.14);
+    --brand-ring: rgba(92, 195, 201, 0.4);
+
+    --glass-bg: rgba(14, 38, 47, 0.72);
+    --glass-bg-strong: rgba(12, 32, 40, 0.9);
+    --glass-bg-dim: rgba(14, 38, 47, 0.55);
+    --glass-bg-ink: rgba(3, 12, 15, 0.7);
+    --glass-border: rgba(180, 219, 226, 0.16);
+    --glass-border-outer: rgba(0, 0, 0, 0.5);
+    --glass-highlight: linear-gradient(
+      to bottom,
+      rgba(210, 240, 245, 0.14),
+      rgba(255, 255, 255, 0) 42%
+    );
+    --scrim: rgba(2, 9, 12, 0.6);
+
+    --e1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --e2: 0 2px 6px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+    --e3: 0 4px 12px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.38);
+    --e4: 0 8px 24px rgba(0, 0, 0, 0.5), 0 32px 70px rgba(0, 0, 0, 0.5);
+    --e-brand: 0 6px 20px rgba(92, 195, 201, 0.22);
+    --inset-hair: inset 0 1px 0 rgba(210, 240, 245, 0.1);
+
+    --coral-100: rgba(242, 96, 63, 0.18);
+    --coral-500: #ff8163;
+    --ok-100: rgba(24, 148, 106, 0.18);
+    --ok-500: #4fcb96;
+    --warn-100: rgba(201, 138, 18, 0.2);
+    --warn-500: #e8b755;
+    --bad-100: rgba(217, 63, 51, 0.2);
+    --bad-500: #ff7a6d;
+    --sand-100: rgba(236, 201, 142, 0.16);
+    --sand-500: #dfb473;
+  }
+}
+
+/* Explicit dark, for the in-app theme switch. Mirrors the block above. */
+:root[data-theme="dark"] {
+  --bg: #051216;
+  --bg-deep: #030c0f;
+  --surface: #0c2028;
+  --surface-2: #102830;
+  --surface-sunken: #081a20;
+  --surface-inverse: #eaf3f4;
+  --text: #e9f3f4;
+  --text-2: #9fbcc4;
+  --text-3: #7aa0aa;
+  --text-on-brand: #04181a;
+  --text-on-inverse: var(--ink-900);
+  --line: rgba(190, 224, 231, 0.14);
+  --line-strong: rgba(190, 224, 231, 0.26);
+  --brand: var(--tide-300);
+  --brand-hover: var(--tide-200);
+  --brand-press: var(--tide-100);
+  --brand-soft: rgba(92, 195, 201, 0.14);
+  --brand-ring: rgba(92, 195, 201, 0.4);
+  --glass-bg: rgba(14, 38, 47, 0.72);
+  --glass-bg-strong: rgba(12, 32, 40, 0.9);
+  --glass-bg-dim: rgba(14, 38, 47, 0.55);
+  --glass-bg-ink: rgba(3, 12, 15, 0.7);
+  --glass-border: rgba(180, 219, 226, 0.16);
+  --glass-border-outer: rgba(0, 0, 0, 0.5);
+  --glass-highlight: linear-gradient(
+    to bottom,
+    rgba(210, 240, 245, 0.14),
+    rgba(255, 255, 255, 0) 42%
+  );
+  --scrim: rgba(2, 9, 12, 0.6);
+  --e1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --e2: 0 2px 6px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+  --e3: 0 4px 12px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.38);
+  --e4: 0 8px 24px rgba(0, 0, 0, 0.5), 0 32px 70px rgba(0, 0, 0, 0.5);
+  --e-brand: 0 6px 20px rgba(92, 195, 201, 0.22);
+  --inset-hair: inset 0 1px 0 rgba(210, 240, 245, 0.1);
+  --coral-100: rgba(242, 96, 63, 0.18);
+  --coral-500: #ff8163;
+  --ok-100: rgba(24, 148, 106, 0.18);
+  --ok-500: #4fcb96;
+  --warn-100: rgba(201, 138, 18, 0.2);
+  --warn-500: #e8b755;
+  --bad-100: rgba(217, 63, 51, 0.2);
+  --bad-500: #ff7a6d;
+  --sand-100: rgba(236, 201, 142, 0.16);
+  --sand-500: #dfb473;
+}
+
+/* --- Reduced motion ------------------------------------------------------- *
+   Collapse every motion token at the source. Transitions still "complete"
+   (state lands instantly), nothing animates, and no component needs to know. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --m-fast: 1ms;
+    --m-std: 1ms;
+    --m-page: 1ms;
+    --m-spring: 1ms;
+    --m-modal: 1ms;
+    --m-drawer: 1ms;
+  }
+}
